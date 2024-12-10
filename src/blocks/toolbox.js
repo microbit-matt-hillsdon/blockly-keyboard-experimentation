@@ -5,52 +5,64 @@
  */
 
 export const toolbox = {
-  'kind': 'flyoutToolbox',
+  'kind': 'categoryToolbox',
   'contents': [
     {
-      kind: 'block',
-      type: 'p5_background_color',
-      inputs: {
-        COLOR: {
-          shadow: {
-            type: 'colour_picker',
+      'kind': 'category',
+      'name': 'Colours',
+      'contents': [
+        {
+          kind: 'block',
+          type: 'p5_background_color',
+          inputs: {
+            COLOR: {
+              shadow: {
+                type: 'colour_picker',
+              },
+            },
           },
         },
-      },
+        {
+          kind: 'block',
+          type: 'colour_random',
+        },
+      ],
     },
     {
-      kind: 'block',
-      type: 'colour_random',
-    },
-    {
-      kind: 'block',
-      type: 'draw_emoji',
-    },
-    {
-      kind: 'block',
-      type: 'simple_circle',
-      inputs: {
-        COLOR: {
-          shadow: {
-            type: 'colour_picker',
+      kind: 'category',
+      name: 'Drawing',
+      contents: [
+        {
+          kind: 'block',
+          type: 'draw_emoji',
+        },
+        {
+          kind: 'block',
+          type: 'simple_circle',
+          inputs: {
+            COLOR: {
+              shadow: {
+                type: 'colour_picker',
+              },
+            },
           },
         },
-      },
-    },
-    {
-      kind: 'block',
-      type: 'write_text_with_shadow',
-      inputs: {
-        TEXT: {
-          shadow: {
-            type: 'text_only',
+        {
+          kind: 'block',
+          type: 'write_text_with_shadow',
+          inputs: {
+            TEXT: {
+              shadow: {
+                type: 'text_only',
+              },
+            },
           },
         },
-      },
-    },
-    {
-      kind: 'block',
-      type: 'write_text_without_shadow',
+        {
+          kind: 'block',
+          type: 'write_text_without_shadow',
+        },
+      ],
     },
   ],
 };
