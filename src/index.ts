@@ -7,27 +7,41 @@
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {installCursor} from './line_cursor';
+import * as Constants from './constants';
+
+export interface IExternalToolbox {
+  focus(): void;
+}
+
+export interface IKeyboardNavigationOptions {
+  externalToolbox?: IExternalToolbox;
+}
 
 /** Plugin for keyboard navigation. */
 export class KeyboardNavigation {
   /** The workspace. */
   protected workspace: Blockly.WorkspaceSvg;
+  private navigationController: NavigationController;
 
   /**
    * Constructs the keyboard navigation.
    *
    * @param workspace The workspace that the plugin will
    *     be added to.
+   * @param options Options.
    */
-  constructor(workspace: Blockly.WorkspaceSvg) {
+  constructor(
+    workspace: Blockly.WorkspaceSvg,
+    options: IKeyboardNavigationOptions = {},
+  ) {
     this.workspace = workspace;
 
-    const navigationController = new NavigationController();
-    navigationController.init();
-    navigationController.addWorkspace(workspace);
+    this.navigationController = new NavigationController(options);
+    this.navigationController.init();
+    this.navigationController.addWorkspace(workspace);
     // Turns on keyboard navigation.
-    navigationController.setHasAutoNavigationEnabled(true);
-    navigationController.listShortcuts();
+    this.navigationController.setHasAutoNavigationEnabled(true);
+    this.navigationController.listShortcuts();
 
     this.setGlowTheme();
     installCursor(workspace.getMarkerManager());
@@ -37,11 +51,35 @@ export class KeyboardNavigation {
     workspace.getParentSvg().removeAttribute('tabindex');
 
     workspace.getSvgGroup().addEventListener('focus', () => {
-      navigationController.setHasFocus(true);
+      this.navigationController.setHasFocus(true);
     });
     workspace.getSvgGroup().addEventListener('blur', () => {
-      navigationController.setHasFocus(false);
+      this.navigationController.setHasFocus(false);
     });
+  }
+
+  /**
+   * Focus the flyout if open.
+   *
+   * Generally not required if Blockly manages your toolbox.
+   */
+  focusFlyout(): void {
+    this.navigationController.navigation.focusFlyout(this.workspace);
+    // Focusing the toolbox disabled navigation so re-enable.
+    // We don't call enable() because that resets the flyout and sets the state to the workspace.
+    this.workspace.keyboardAccessibilityMode = true;
+    (this.workspace.getSvgGroup() as SVGElement).focus();
+  }
+
+  /**
+   * Called when an external toolbox takes the focus.
+   */
+  onExternalToolboxFocused(): void {
+    this.navigationController.disable(this.workspace);
+    this.navigationController.navigation.setState(
+      this.workspace,
+      Constants.STATE.TOOLBOX,
+    );
   }
 
   /**

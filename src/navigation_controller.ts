@@ -28,6 +28,7 @@ import {Navigation} from './navigation';
 import {Announcer} from './announcer';
 import {LineCursor} from './line_cursor';
 import {ShortcutDialog} from './shortcut_dialog';
+import {IExternalToolbox, IKeyboardNavigationOptions} from 'src';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -43,7 +44,7 @@ export class NavigationController {
 
   /** The workspace a copy or cut keyboard shortcut happened in. */
   copyWorkspace: WorkspaceSvg | null = null;
-  navigation: Navigation = new Navigation();
+  navigation: Navigation;
   announcer: Announcer = new Announcer();
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
@@ -57,6 +58,10 @@ export class NavigationController {
   private origToolboxOnShortcut:
     | typeof Blockly.Toolbox.prototype.onShortcut
     | null = null;
+
+  constructor(options: IKeyboardNavigationOptions = {}) {
+    this.navigation = new Navigation(options);
+  }
 
   /**
    * Registers the default keyboard shortcuts for keyboard navigation.

@@ -17,6 +17,7 @@ import {
   registrationType as cursorRegistrationType,
   FlyoutCursor,
 } from './flyout_cursor';
+import {IKeyboardNavigationOptions} from 'src';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -74,8 +75,9 @@ export class Navigation {
 
   /**
    * Constructor for keyboard navigation.
+   * @param options Options.
    */
-  constructor() {
+  constructor(private options: IKeyboardNavigationOptions) {
     this.wsChangeWrapper = this.workspaceChangeListener.bind(this);
     this.flyoutChangeWrapper = this.flyoutChangeListener.bind(this);
   }
@@ -475,6 +477,14 @@ export class Navigation {
    * @param workspace The workspace to get the toolbox on.
    */
   focusToolbox(workspace: Blockly.WorkspaceSvg) {
+    if (this.options.externalToolbox) {
+      this.resetFlyout(workspace, false /* shouldHide */);
+      this.disableKeyboardAccessibility(workspace);
+      this.options.externalToolbox.focus();
+      this.setState(workspace, Constants.STATE.TOOLBOX);
+      return;
+    }
+
     const toolbox = workspace.getToolbox();
     if (!toolbox) {
       return;
@@ -1092,7 +1102,7 @@ export class Navigation {
 
     if (wasVisitingConnection) {
       const connectionNode =
-            Blockly.ASTNode.createConnectionNode(superiorConnection);
+        Blockly.ASTNode.createConnectionNode(superiorConnection);
       workspace.getCursor()!.setCurNode(connectionNode!);
     }
   }
