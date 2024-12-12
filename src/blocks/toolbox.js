@@ -64,5 +64,38 @@ export const toolbox = {
         },
       ],
     },
+    {
+      'kind': 'category',
+      'name': 'Misc',
+      'contents': [
+        {
+          kind: 'label',
+          text: 'This is a label',
+        },
+        {
+          'kind': 'category',
+          'name': 'A subcategory',
+          'contents': [
+            {
+              kind: 'label',
+              text: 'This is another label',
+            },
+            {
+              kind: 'block',
+              type: 'colour_random',
+            },
+          ],
+        },
+        {
+          'kind': 'button',
+          'text': 'This is a button',
+          'callbackKey': 'unimplemented',
+        },
+        {
+          kind: 'block',
+          type: 'colour_random',
+        },
+      ],
+    },
   ],
 };
