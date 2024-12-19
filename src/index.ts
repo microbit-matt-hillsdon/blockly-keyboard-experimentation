@@ -73,12 +73,19 @@ export class KeyboardNavigation {
   /**
    * Called when an external toolbox takes the focus.
    */
-  onExternalToolboxFocused(): void {
+  onExternalToolboxFocus(): void {
     this.navigationController.disable(this.workspace);
     this.navigationController.navigation.setState(
       this.workspace,
       Constants.STATE.TOOLBOX,
     );
+  }
+
+  /**
+   * Called when an external toolbox loses the focus.
+   */
+  onExternalToolboxBlur(): void {
+    this.workspace.keyboardAccessibilityMode = true;
   }
 
   /**
