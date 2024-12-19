@@ -39,8 +39,7 @@ export class KeyboardNavigation {
     this.navigationController = new NavigationController(options);
     this.navigationController.init();
     this.navigationController.addWorkspace(workspace);
-    // Turns on keyboard navigation.
-    this.navigationController.setHasAutoNavigationEnabled(true);
+    this.navigationController.enable(workspace);
     this.navigationController.listShortcuts();
 
     this.setGlowTheme();
