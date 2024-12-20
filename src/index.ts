@@ -86,6 +86,16 @@ export class KeyboardNavigation {
    */
   onExternalToolboxBlur(): void {
     this.workspace.keyboardAccessibilityMode = true;
+    // Don't fight with focusFlyout() -  we'll get that before the blur.
+    if (
+      this.navigationController.navigation.getState(this.workspace) ===
+      Constants.STATE.TOOLBOX
+    ) {
+      this.navigationController.navigation.setState(
+        this.workspace,
+        Constants.STATE.WORKSPACE,
+      );
+    }
   }
 
   /**
