@@ -183,7 +183,7 @@ const simpleCircle = {
       {
         'type': 'p5_setup',
         'id': '5.{;T}3Qv}Awi:1M$:ut',
-        'x': 0,
+        'x': 200,
         'y': 75,
         'deletable': false,
         'inputs': {
@@ -221,7 +221,7 @@ const simpleCircle = {
       {
         'type': 'p5_draw',
         'id': '3iI4f%2#Gmk}=OjI7(8h',
-        'x': 0,
+        'x': 200,
         'y': 332,
         'deletable': false,
         'inputs': {
