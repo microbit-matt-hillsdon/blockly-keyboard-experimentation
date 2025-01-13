@@ -48,7 +48,7 @@ export class NavigationController {
   announcer: Announcer = new Announcer();
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
-  hasNavigationFocus: boolean = false;
+  hasNavigationFocus = false;
 
   /**
    * Original Toolbox.prototype.onShortcut method, saved by
@@ -149,10 +149,15 @@ export class NavigationController {
    *
    * @param workspace the workspace that now has input focus.
    * @param isFocused whether the environment has browser focus.
+   * @param softWorkspaceFocus avoid workspace modifications.
    */
-  setHasFocus(workspace: WorkspaceSvg, isFocused: boolean) {
+  setHasFocus(
+    workspace: WorkspaceSvg,
+    isFocused: boolean,
+    softWorkspaceFocus = false,
+  ) {
     this.hasNavigationFocus = isFocused;
-    if (isFocused) {
+    if (isFocused && !softWorkspaceFocus) {
       this.navigation.focusWorkspace(workspace, true);
     }
   }
@@ -547,11 +552,11 @@ export class NavigationController {
             case Constants.STATE.WORKSPACE:
               const curNode = workspace?.getCursor()?.getCurNode();
               const source = curNode?.getSourceBlock();
-	              return !!(
-	                source?.isDeletable() &&
-	                source?.isMovable() &&
-	                !Blockly.Gesture.inProgress()
-	              );
+              return !!(
+                source?.isDeletable() &&
+                source?.isMovable() &&
+                !Blockly.Gesture.inProgress()
+              );
             case Constants.STATE.FLYOUT:
               const flyoutWorkspace = workspace.getFlyout()?.getWorkspace();
               const sourceBlock = flyoutWorkspace

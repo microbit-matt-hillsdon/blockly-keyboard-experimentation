@@ -5,8 +5,8 @@
  */
 
 import * as Blockly from 'blockly/core';
-import { NavigationController } from './navigation_controller';
-import { installCursor } from './line_cursor';
+import {NavigationController} from './navigation_controller';
+import {installCursor} from './line_cursor';
 import * as Constants from './constants';
 
 export interface IExternalToolbox {
@@ -22,6 +22,7 @@ export class KeyboardNavigation {
   /** The workspace. */
   protected workspace: Blockly.WorkspaceSvg;
   private navigationController: NavigationController;
+  private softWorkspaceFocus = false;
 
   /**
    * Constructs the keyboard navigation.
@@ -50,7 +51,11 @@ export class KeyboardNavigation {
     workspace.getParentSvg().removeAttribute('tabindex');
 
     workspace.getSvgGroup().addEventListener('focus', () => {
-      this.navigationController.setHasFocus(workspace, true);
+      this.navigationController.setHasFocus(
+        workspace,
+        true,
+        this.softWorkspaceFocus,
+      );
     });
     workspace.getSvgGroup().addEventListener('blur', () => {
       this.navigationController.setHasFocus(workspace, false);
@@ -67,7 +72,9 @@ export class KeyboardNavigation {
     // Focusing the toolbox disabled navigation so re-enable.
     // We don't call enable() because that resets the flyout and sets the state to the workspace.
     this.workspace.keyboardAccessibilityMode = true;
+    this.softWorkspaceFocus = true;
     (this.workspace.getSvgGroup() as SVGElement).focus();
+    this.softWorkspaceFocus = false;
   }
 
   /**
