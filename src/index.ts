@@ -5,8 +5,8 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {NavigationController} from './navigation_controller';
-import {installCursor} from './line_cursor';
+import { NavigationController } from './navigation_controller';
+import { installCursor } from './line_cursor';
 import * as Constants from './constants';
 
 export interface IExternalToolbox {
@@ -50,10 +50,10 @@ export class KeyboardNavigation {
     workspace.getParentSvg().removeAttribute('tabindex');
 
     workspace.getSvgGroup().addEventListener('focus', () => {
-      this.navigationController.setHasFocus(true);
+      this.navigationController.setHasFocus(workspace, true);
     });
     workspace.getSvgGroup().addEventListener('blur', () => {
-      this.navigationController.setHasFocus(false);
+      this.navigationController.setHasFocus(workspace, false);
     });
   }
 
