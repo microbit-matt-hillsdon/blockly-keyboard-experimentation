@@ -48,7 +48,7 @@ export class NavigationController {
   announcer: Announcer = new Announcer();
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
-  hasNavigationFocus = false;
+  hasNavigationFocus: boolean = false;
 
   /**
    * Original Toolbox.prototype.onShortcut method, saved by
@@ -552,11 +552,11 @@ export class NavigationController {
             case Constants.STATE.WORKSPACE:
               const curNode = workspace?.getCursor()?.getCurNode();
               const source = curNode?.getSourceBlock();
-              return !!(
-                source?.isDeletable() &&
-                source?.isMovable() &&
-                !Blockly.Gesture.inProgress()
-              );
+                      return !!(
+                        source?.isDeletable() &&
+                        source?.isMovable() &&
+                        !Blockly.Gesture.inProgress()
+                      );
             case Constants.STATE.FLYOUT:
               const flyoutWorkspace = workspace.getFlyout()?.getWorkspace();
               const sourceBlock = flyoutWorkspace

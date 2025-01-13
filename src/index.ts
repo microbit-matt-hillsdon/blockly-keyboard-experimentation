@@ -69,9 +69,8 @@ export class KeyboardNavigation {
    */
   focusFlyout(): void {
     this.navigationController.navigation.focusFlyout(this.workspace);
-    // Focusing the toolbox disabled navigation so re-enable.
-    // We don't call enable() because that resets the flyout and sets the state to the workspace.
-    this.workspace.keyboardAccessibilityMode = true;
+    // Focus the workspace after opening a flyout via an external toolbox.
+    // The use of softWorkspaceFocus prevents workspace reset.
     this.softWorkspaceFocus = true;
     (this.workspace.getSvgGroup() as SVGElement).focus();
     this.softWorkspaceFocus = false;
