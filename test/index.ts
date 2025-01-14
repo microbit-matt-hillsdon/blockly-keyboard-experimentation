@@ -84,6 +84,13 @@ function addP5() {
 
 document.addEventListener('DOMContentLoaded', function () {
   addP5();
-  createWorkspace();
+  const workspace = createWorkspace();
+  const scenarioSelect = document.getElementById(
+    'scenarioSelect',
+  ) as HTMLSelectElement;
+  scenarioSelect.addEventListener('change', (e) => {
+    const scenarioString = scenarioSelect.value;
+    load(workspace, scenarioString);
+  });
   document.getElementById('run')?.addEventListener('click', runCode);
 });
