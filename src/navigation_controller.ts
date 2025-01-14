@@ -28,7 +28,7 @@ import {Navigation} from './navigation';
 import {Announcer} from './announcer';
 import {LineCursor} from './line_cursor';
 import {ShortcutDialog} from './shortcut_dialog';
-import {IExternalToolbox, IKeyboardNavigationOptions} from 'src';
+import {IKeyboardNavigationOptions} from './index';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -552,11 +552,11 @@ export class NavigationController {
             case Constants.STATE.WORKSPACE:
               const curNode = workspace?.getCursor()?.getCurNode();
               const source = curNode?.getSourceBlock();
-                      return !!(
-                        source?.isDeletable() &&
-                        source?.isMovable() &&
-                        !Blockly.Gesture.inProgress()
-                      );
+	              return !!(
+	                source?.isDeletable() &&
+	                source?.isMovable() &&
+	                !Blockly.Gesture.inProgress()
+	              );
             case Constants.STATE.FLYOUT:
               const flyoutWorkspace = workspace.getFlyout()?.getWorkspace();
               const sourceBlock = flyoutWorkspace

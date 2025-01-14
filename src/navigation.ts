@@ -17,7 +17,7 @@ import {
   registrationType as cursorRegistrationType,
   FlyoutCursor,
 } from './flyout_cursor';
-import {IKeyboardNavigationOptions} from 'src';
+import {IKeyboardNavigationOptions} from './index';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -1108,7 +1108,7 @@ export class Navigation {
 
     if (wasVisitingConnection) {
       const connectionNode =
-        Blockly.ASTNode.createConnectionNode(superiorConnection);
+            Blockly.ASTNode.createConnectionNode(superiorConnection);
       workspace.getCursor()!.setCurNode(connectionNode!);
     }
   }
