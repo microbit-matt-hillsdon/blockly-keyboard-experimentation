@@ -479,7 +479,7 @@ export class Navigation {
   focusToolbox(workspace: Blockly.WorkspaceSvg) {
     if (this.options.externalToolbox) {
       this.resetFlyout(workspace, false /* shouldHide */);
-      this.disableKeyboardAccessibility(workspace);
+      workspace.keyboardAccessibilityMode = false;
       this.options.externalToolbox.focus();
       this.setState(workspace, Constants.STATE.TOOLBOX);
       return;
