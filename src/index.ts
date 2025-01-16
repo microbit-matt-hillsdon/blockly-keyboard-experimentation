@@ -63,10 +63,10 @@ export class KeyboardNavigation {
     // Temporary workaround for #136.
     // TODO(#136): fix in core.
     workspace.getParentSvg().addEventListener('focus', () => {
-      navigationController.setHasFocus(workspace, true);
+      this.navigationController.setHasFocus(workspace, true);
     });
     workspace.getParentSvg().addEventListener('blur', () => {
-      navigationController.setHasFocus(workspace, false);
+      this.navigationController.setHasFocus(workspace, false);
     });
   }
 
