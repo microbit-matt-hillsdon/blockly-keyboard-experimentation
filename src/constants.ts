@@ -29,6 +29,7 @@ export enum SHORTCUT_NAMES {
   OUT = 'out',
   INSERT = 'insert',
   MARK = 'mark',
+  MENU = 'menu',
   DISCONNECT = 'disconnect',
   TOOLBOX = 'toolbox',
   EXIT = 'exit',

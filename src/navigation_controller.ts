@@ -483,7 +483,11 @@ export class NavigationController {
           case Constants.STATE.WORKSPACE:
             isHandled = this.fieldShortcutHandler(workspace, shortcut);
             if (!isHandled && workspace) {
-              workspace.getCursor()?.in();
+              const currNode = workspace.getCursor()?.getCurNode()
+              const isSimpleReporter = currNode?.getType() === ASTNode.types.BLOCK && (currNode.getLocation() as Blockly.Block).isSimpleReporter();
+              if (!isSimpleReporter) {
+                workspace.getCursor()?.in();
+              }
               isHandled = true;
             }
             return isHandled;
@@ -560,6 +564,36 @@ export class NavigationController {
         }
       },
       keyCodes: [KeyCodes.ENTER],
+    },
+
+    /**
+     * Enter key:
+     *
+     * - On the flyout: press a button or choose a block to place.
+     * - On a stack: open a block's context menu or field's editor.
+     * - On the workspace: open the context menu.
+     */
+    metaEnter: {
+      name: Constants.SHORTCUT_NAMES.MENU,
+      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
+      callback: (workspace) => {
+        switch (this.navigation.getState(workspace)) {
+          case Constants.STATE.WORKSPACE: {
+           const node = workspace.getCursor()?.getCurNode()
+            if (node?.getType() === Blockly.ASTNode.types.BLOCK)
+              this.navigation.openActionMenu(node)
+
+            return true;
+          }
+          default:
+            return false;
+        }
+      },
+      keyCodes: [
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.CTRL]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.ALT]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.META]),
+      ],
     },
 
     /** Disconnect two blocks. */
@@ -894,13 +928,10 @@ export class NavigationController {
     const originalDeleteItem =
       ContextMenuRegistry.registry.getItem('blockDelete');
     if (!originalDeleteItem) return;
+    ContextMenuRegistry.registry.unregister('blockDelete');
 
     const deleteItem: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => {
-        // FIXME: Consider using the original delete item's display text,
-        // which is dynamic based on the nubmer of blocks to delete.
-        return 'Keyboard Navigation: delete';
-      },
+      ...originalDeleteItem,
       preconditionFn: (scope) => {
         // FIXME: Find a better way to get the workspace, or use `as WorkspaceSvg`.
         const ws = scope.block?.workspace;
@@ -926,12 +957,8 @@ export class NavigationController {
         // Delete the block(s), and put the cursor back in a sane location.
         return this.deleteCallbackFn(ws, null);
       },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'blockDeleteFromContextMenu',
-      weight: 10,
     };
 
-    // FIXME: Decide whether to unregister the original item.
     ContextMenuRegistry.registry.register(deleteItem);
   }
 
@@ -940,7 +967,7 @@ export class NavigationController {
    */
   protected registerCopyAction() {
     const copyAction: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => 'Keyboard Navigation: copy',
+      displayText: (scope) => 'Copy',
       preconditionFn: (scope) => {
         const ws = scope.block?.workspace;
         if (!ws) return 'hidden';
