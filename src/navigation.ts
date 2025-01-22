@@ -1408,7 +1408,7 @@ function fakeEventForNode(node: Blockly.ASTNode): PointerEvent {
 
   // Create a fake event for the action menu code to work from.
   return new PointerEvent('pointerdown', {
-    clientX: coords.x,
-    clientY: coords.y,
+    clientX: coords.x + 5,
+    clientY: coords.y + 50,
   });
 }
