@@ -556,6 +556,36 @@ export class NavigationController {
       keyCodes: [KeyCodes.ENTER],
     },
 
+    /**
+     * Enter key:
+     *
+     * - On the flyout: press a button or choose a block to place.
+     * - On a stack: open a block's context menu or field's editor.
+     * - On the workspace: open the context menu.
+     */
+    metaEnter: {
+      name: Constants.SHORTCUT_NAMES.MENU,
+      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
+      callback: (workspace) => {
+        switch (this.navigation.getState(workspace)) {
+          case Constants.STATE.WORKSPACE: {
+           const node = workspace.getCursor()?.getCurNode()
+            if (node?.getType() === Blockly.ASTNode.types.BLOCK)
+              this.navigation.openActionMenu(node)
+
+            return true;
+          }
+          default:
+            return false;
+        }
+      },
+      keyCodes: [
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.CTRL]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.ALT]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.META]),
+      ],
+    },
+
     /** Disconnect two blocks. */
     disconnect: {
       name: Constants.SHORTCUT_NAMES.DISCONNECT,
