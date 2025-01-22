@@ -918,13 +918,10 @@ export class NavigationController {
     const originalDeleteItem =
       ContextMenuRegistry.registry.getItem('blockDelete');
     if (!originalDeleteItem) return;
+    ContextMenuRegistry.registry.unregister('blockDelete');
 
     const deleteItem: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => {
-        // FIXME: Consider using the original delete item's display text,
-        // which is dynamic based on the nubmer of blocks to delete.
-        return 'Keyboard Navigation: delete';
-      },
+      ...originalDeleteItem,
       preconditionFn: (scope) => {
         // FIXME: Find a better way to get the workspace, or use `as WorkspaceSvg`.
         const ws = scope.block?.workspace;
@@ -950,12 +947,8 @@ export class NavigationController {
         // Delete the block(s), and put the cursor back in a sane location.
         return this.deleteCallbackFn(ws, null);
       },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'blockDeleteFromContextMenu',
-      weight: 10,
     };
 
-    // FIXME: Decide whether to unregister the original item.
     ContextMenuRegistry.registry.register(deleteItem);
   }
 
@@ -964,7 +957,7 @@ export class NavigationController {
    */
   protected registerCopyAction() {
     const copyAction: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => 'Keyboard Navigation: copy',
+      displayText: (scope) => 'Copy',
       preconditionFn: (scope) => {
         const ws = scope.block?.workspace;
         if (!ws) return 'hidden';
