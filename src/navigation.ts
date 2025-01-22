@@ -1237,7 +1237,11 @@ export class Navigation {
     if (nodeType == Blockly.ASTNode.types.FIELD) {
       (curNode.getLocation() as Blockly.Field).showEditor();
     } else if (nodeType == Blockly.ASTNode.types.BLOCK) {
-      this.openActionMenu(curNode);
+      if ((curNode.getLocation() as Blockly.Block).isSimpleReporter()) {
+        (curNode.in()?.getLocation() as Blockly.Field).showEditor()
+      } else {
+        this.openActionMenu(curNode);
+      }
     } else if (
       curNode.isConnection() ||
       nodeType == Blockly.ASTNode.types.WORKSPACE

@@ -473,7 +473,11 @@ export class NavigationController {
           case Constants.STATE.WORKSPACE:
             isHandled = this.fieldShortcutHandler(workspace, shortcut);
             if (!isHandled && workspace) {
-              workspace.getCursor()?.in();
+              const currNode = workspace.getCursor()?.getCurNode()
+              const isSimpleReporter = currNode?.getType() === ASTNode.types.BLOCK && (currNode.getLocation() as Blockly.Block).isSimpleReporter();
+              if (!isSimpleReporter) {
+                workspace.getCursor()?.in();
+              }
               isHandled = true;
             }
             return isHandled;
