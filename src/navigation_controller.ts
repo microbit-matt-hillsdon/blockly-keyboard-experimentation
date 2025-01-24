@@ -894,13 +894,10 @@ export class NavigationController {
     const originalDeleteItem =
       ContextMenuRegistry.registry.getItem('blockDelete');
     if (!originalDeleteItem) return;
+    ContextMenuRegistry.registry.unregister('blockDelete');
 
     const deleteItem: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => {
-        // FIXME: Consider using the original delete item's display text,
-        // which is dynamic based on the nubmer of blocks to delete.
-        return 'Keyboard Navigation: delete';
-      },
+      ...originalDeleteItem,
       preconditionFn: (scope) => {
         // FIXME: Find a better way to get the workspace, or use `as WorkspaceSvg`.
         const ws = scope.block?.workspace;
@@ -926,21 +923,18 @@ export class NavigationController {
         // Delete the block(s), and put the cursor back in a sane location.
         return this.deleteCallbackFn(ws, null);
       },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'blockDeleteFromContextMenu',
-      weight: 10,
     };
 
-    // FIXME: Decide whether to unregister the original item.
     ContextMenuRegistry.registry.register(deleteItem);
   }
+
 
   /**
    * Register the block copy action as a context menu item on blocks.
    */
   protected registerCopyAction() {
     const copyAction: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => 'Keyboard Navigation: copy',
+      displayText: (scope) => 'Copy',
       preconditionFn: (scope) => {
         const ws = scope.block?.workspace;
         if (!ws) return 'hidden';
@@ -961,6 +955,60 @@ export class NavigationController {
   }
 
   /**
+   * Register the edit content action as a context menu item on blocks.
+   */
+  protected registerEditContentAction() {
+    const editContentAction: ContextMenuRegistry.RegistryItem = {
+      displayText: () => 'Edit content →',
+      preconditionFn: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws || !scope.block) return 'hidden';
+        // The user can use Edit instead
+        if (scope.block.isSimpleReporter()) return 'hidden';
+        // TODO: is this the right/simplest precondition?
+        if (Blockly.ASTNode.createBlockNode(scope.block)?.in()?.getSourceBlock() !== scope.block) return 'hidden';
+        return "enabled";
+      },
+      callback: (scope) => {
+        scope.block?.workspace?.getCursor()?.in();
+        return true;
+      },
+      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
+      id: 'blockMoveToFieldContextMenu',
+      weight: 0,
+    };
+
+    ContextMenuRegistry.registry.register(editContentAction);
+  }
+
+
+  /**
+   * Register the edit content action as a context menu item on blocks.
+   */
+  protected registerEditAction() {
+    const editAction: ContextMenuRegistry.RegistryItem = {
+      displayText: () => 'Edit',
+      preconditionFn: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws || !scope.block) return 'hidden';
+        if (!scope.block.isSimpleReporter()) return 'hidden';
+
+        return "enabled";
+      },
+      callback: (scope) => {
+        if (!scope.block) return
+        (Blockly.ASTNode.createBlockNode(scope.block)?.in()?.getLocation() as Blockly.Field).showEditor();
+        return true;
+      },
+      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
+      id: 'blockEditContextMenu',
+      weight: 0,
+    };
+
+    ContextMenuRegistry.registry.register(editAction);
+  }
+
+  /**
    * Registers all default keyboard shortcut items for keyboard
    * navigation. This should be called once per instance of
    * KeyboardShortcutRegistry.
@@ -972,6 +1020,8 @@ export class NavigationController {
 
     this.registerDeleteAction();
     this.registerCopyAction();
+    this.registerEditContentAction();
+    this.registerEditAction();
 
     // Initalise the shortcut modal with available shortcuts.  Needs
     // to be done separately rather at construction, as many shortcuts
