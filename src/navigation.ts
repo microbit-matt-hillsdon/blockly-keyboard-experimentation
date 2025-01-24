@@ -1237,15 +1237,7 @@ export class Navigation {
     if (nodeType == Blockly.ASTNode.types.FIELD) {
       (curNode.getLocation() as Blockly.Field).showEditor();
     } else if (nodeType == Blockly.ASTNode.types.BLOCK) {
-      if ((curNode.getLocation() as Blockly.Block).isSimpleReporter())  {
-        (curNode.in()?.getLocation() as Blockly.Field).showEditor()
-      } else {
-        // This shouldn't be an alert. Some kind of toast notification that's also used
-        // for action feedback?
-        // It would be nice to know there *were* fields before mentioning them.
-        // Also needs the platform specific shortcut!
-        alert("Use right arrow to visit fields and Ctrl+Enter for more options")
-      }
+      this.openActionMenu(curNode);
     } else if (
       curNode.isConnection() ||
       nodeType == Blockly.ASTNode.types.WORKSPACE

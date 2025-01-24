@@ -168,7 +168,7 @@ export class LineCursor extends Marker {
       case ASTNode.types.NEXT:
         return !(location as Blockly.Connection).isConnected();
       case ASTNode.types.FIELD:
-        return !(node.getSourceBlock()?.isSimpleReporter() && node.getSourceBlock()?.inputList.length === 1)
+        return true;
       default:
         return false;
     }

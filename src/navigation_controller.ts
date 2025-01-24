@@ -552,36 +552,6 @@ export class NavigationController {
       keyCodes: [KeyCodes.ENTER],
     },
 
-    /**
-     * Enter key:
-     *
-     * - On the flyout: press a button or choose a block to place.
-     * - On a stack: open a block's context menu or field's editor.
-     * - On the workspace: open the context menu.
-     */
-    metaEnter: {
-      name: Constants.SHORTCUT_NAMES.MENU,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace) => {
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE: {
-           const node = workspace.getCursor()?.getCurNode()
-            if (node?.getType() === Blockly.ASTNode.types.BLOCK)
-              this.navigation.openActionMenu(node)
-
-            return true;
-          }
-          default:
-            return false;
-        }
-      },
-      keyCodes: [
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.CTRL]),
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.ALT]),
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.META]),
-      ],
-    },
-
     /** Disconnect two blocks. */
     disconnect: {
       name: Constants.SHORTCUT_NAMES.DISCONNECT,
@@ -948,6 +918,7 @@ export class NavigationController {
     ContextMenuRegistry.registry.register(deleteItem);
   }
 
+
   /**
    * Register the block copy action as a context menu item on blocks.
    */
@@ -974,6 +945,60 @@ export class NavigationController {
   }
 
   /**
+   * Register the edit content action as a context menu item on blocks.
+   */
+  protected registerEditContentAction() {
+    const editContentAction: ContextMenuRegistry.RegistryItem = {
+      displayText: () => 'Edit content →',
+      preconditionFn: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws || !scope.block) return 'hidden';
+        // The user can use Edit instead
+        if (scope.block.isSimpleReporter()) return 'hidden';
+        // TODO: is this the right/simplest precondition?
+        if (Blockly.ASTNode.createBlockNode(scope.block)?.in()?.getSourceBlock() !== scope.block) return 'hidden';
+        return "enabled";
+      },
+      callback: (scope) => {
+        scope.block?.workspace?.getCursor()?.in();
+        return true;
+      },
+      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
+      id: 'blockMoveToFieldContextMenu',
+      weight: 0,
+    };
+
+    ContextMenuRegistry.registry.register(editContentAction);
+  }
+
+
+  /**
+   * Register the edit content action as a context menu item on blocks.
+   */
+  protected registerEditAction() {
+    const editAction: ContextMenuRegistry.RegistryItem = {
+      displayText: () => 'Edit',
+      preconditionFn: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws || !scope.block) return 'hidden';
+        if (!scope.block.isSimpleReporter()) return 'hidden';
+
+        return "enabled";
+      },
+      callback: (scope) => {
+        if (!scope.block) return
+        (Blockly.ASTNode.createBlockNode(scope.block)?.in()?.getLocation() as Blockly.Field).showEditor();
+        return true;
+      },
+      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
+      id: 'blockEditContextMenu',
+      weight: 0,
+    };
+
+    ContextMenuRegistry.registry.register(editAction);
+  }
+
+  /**
    * Registers all default keyboard shortcut items for keyboard
    * navigation. This should be called once per instance of
    * KeyboardShortcutRegistry.
@@ -985,6 +1010,8 @@ export class NavigationController {
 
     this.registerDeleteAction();
     this.registerCopyAction();
+    this.registerEditContentAction();
+    this.registerEditAction();
 
     // Initalise the shortcut modal with available shortcuts.  Needs
     // to be done separately rather at construction, as many shortcuts
