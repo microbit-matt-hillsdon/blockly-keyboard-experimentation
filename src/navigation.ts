@@ -1242,14 +1242,19 @@ export class Navigation {
     if (nodeType == Blockly.ASTNode.types.FIELD) {
       (curNode.getLocation() as Blockly.Field).showEditor();
     } else if (nodeType == Blockly.ASTNode.types.BLOCK) {
-      if ((curNode.getLocation() as Blockly.Block).isSimpleReporter())  {
-        (curNode.in()?.getLocation() as Blockly.Field).showEditor()
+      if ((curNode.getLocation() as Blockly.Block).isSimpleReporter()) {
+        // @ts-expect-error isFullBlockField is a protected method.
+        if ((curNode.in()?.getLocation() as Blockly.Field).isFullBlockField()) {
+          (curNode.in()?.getLocation() as Blockly.Field).showEditor();
+        } else {
+          alert('Not clear what "Enter" should do at this position');
+        }
       } else {
         // This shouldn't be an alert. Some kind of toast notification that's also used
         // for action feedback?
         // It would be nice to know there *were* fields before mentioning them.
         // Also needs the platform specific shortcut!
-        alert("Use right arrow to visit fields and Ctrl+Enter for more options")
+        alert('Use right arrow to visit fields and Ctrl+Enter for more options');
       }
     } else if (
       curNode.isConnection() ||
