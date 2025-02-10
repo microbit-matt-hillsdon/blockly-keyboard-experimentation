@@ -297,7 +297,7 @@ export class NavigationController {
    * @returns True iff `deleteCallbackFn` function should be called.
    */
   protected blockCopyPreconditionFn(workspace: WorkspaceSvg) {
-    if (!this.canCurrentlyEdit(workspace))  return false;
+    if (!this.canCurrentlyEdit(workspace)) return false;
     switch (this.navigation.getState(workspace)) {
       case Constants.STATE.WORKSPACE:
         const curNode = workspace?.getCursor()?.getCurNode();
@@ -562,6 +562,34 @@ export class NavigationController {
       keyCodes: [KeyCodes.ENTER],
     },
 
+    /**
+     * Cmd/Ctrl/Alt+Enter key:
+     *
+     * Shows the action menu.
+     */
+    menu: {
+      name: Constants.SHORTCUT_NAMES.MENU,
+      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
+      callback: (workspace) => {
+        switch (this.navigation.getState(workspace)) {
+          case Constants.STATE.WORKSPACE: {
+            const node = workspace.getCursor()?.getCurNode();
+            if (node?.getType() === Blockly.ASTNode.types.BLOCK)
+              this.navigation.openActionMenu(node);
+
+            return true;
+          }
+          default:
+            return false;
+        }
+      },
+      keyCodes: [
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.CTRL]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.ALT]),
+        createSerializedKey(KeyCodes.ENTER, [KeyCodes.META]),
+      ],
+    },
+
     /** Disconnect two blocks. */
     disconnect: {
       name: Constants.SHORTCUT_NAMES.DISCONNECT,
@@ -661,8 +689,8 @@ export class NavigationController {
     /** Copy the block the cursor is currently on. */
     copy: {
       name: Constants.SHORTCUT_NAMES.COPY,
-      preconditionFn: this.blockCopyPreconditionFn,
-      callback: this.blockCopyCallbackFn,
+      preconditionFn: this.blockCopyPreconditionFn.bind(this),
+      callback: this.blockCopyCallbackFn.bind(this),
       keyCodes: [
         createSerializedKey(KeyCodes.C, [KeyCodes.CTRL]),
         createSerializedKey(KeyCodes.C, [KeyCodes.ALT]),
@@ -735,8 +763,8 @@ export class NavigationController {
     /** Keyboard shortcut to delete the block the cursor is currently on. */
     delete: {
       name: Constants.SHORTCUT_NAMES.DELETE,
-      preconditionFn: this.deletePreconditionFn,
-      callback: this.deleteCallbackFn,
+      preconditionFn: this.deletePreconditionFn.bind(this),
+      callback: this.deleteCallbackFn.bind(this),
       keyCodes: [KeyCodes.DELETE, KeyCodes.BACKSPACE],
       allowCollision: true,
     },
@@ -961,6 +989,37 @@ export class NavigationController {
   }
 
   /**
+   * Register the action for inserting above a block.
+   */
+  protected registerInsertAction() {
+    const insertAboveAction: ContextMenuRegistry.RegistryItem = {
+      displayText: (scope) => 'Insert block above',
+      preconditionFn: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws) return 'hidden';
+
+        if (!scope.block?.previousConnection) return 'hidden';
+
+        return this.canCurrentlyEdit(ws) ? 'enabled' : 'hidden';
+      },
+      callback: (scope) => {
+        const ws = scope.block?.workspace;
+        if (!ws) return false;
+
+        if (this.navigation.getState(ws) == Constants.STATE.WORKSPACE) {
+          this.navigation.openToolboxOrFlyout(ws);
+          return true;
+        }
+        return false;
+      },
+      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
+      id: 'blockInsertAbove',
+      weight: 12,
+    };
+    ContextMenuRegistry.registry.register(insertAboveAction);
+  }
+
+  /**
    * Registers all default keyboard shortcut items for keyboard
    * navigation. This should be called once per instance of
    * KeyboardShortcutRegistry.
@@ -972,6 +1031,7 @@ export class NavigationController {
 
     this.registerDeleteAction();
     this.registerCopyAction();
+    this.registerInsertAction();
 
     // Initalise the shortcut modal with available shortcuts.  Needs
     // to be done separately rather at construction, as many shortcuts
@@ -986,6 +1046,9 @@ export class NavigationController {
     for (const shortcut of Object.values(this.shortcuts)) {
       ShortcutRegistry.registry.unregister(shortcut.name);
     }
+
+    ContextMenuRegistry.registry.unregister('blockDeleteFromContextMenu');
+    ContextMenuRegistry.registry.unregister('blockCopyFromContextMenu');
 
     this.removeShortcutHandlers();
     this.navigation.dispose();
