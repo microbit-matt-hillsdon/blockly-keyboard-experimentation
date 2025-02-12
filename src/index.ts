@@ -6,7 +6,7 @@
 
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
-import {installCursor} from './line_cursor';
+import {LineCursor} from './line_cursor';
 import * as Constants from './constants';
 
 export interface IExternalToolbox {
@@ -32,6 +32,9 @@ export class KeyboardNavigation {
   /** Keyboard navigation controller instance for the workspace. */
   private navigationController: NavigationController;
 
+  /** Cursor for the main workspace. */
+  private cursor: LineCursor;
+
   /**
    * These fields are used to preserve the workspace's initial state to restore
    * it when/if keyboard navigation is disabled.
@@ -39,7 +42,6 @@ export class KeyboardNavigation {
   private injectionDivTabIndex: string | null;
   private workspaceParentTabIndex: string | null;
   private originalTheme: Blockly.Theme;
-  private originalCursor: Blockly.Cursor | null;
 
   /**
    * Constructs the keyboard navigation.
@@ -62,8 +64,9 @@ export class KeyboardNavigation {
 
     this.originalTheme = workspace.getTheme();
     this.setGlowTheme();
-    this.originalCursor = workspace.getMarkerManager().getCursor();
-    installCursor(workspace.getMarkerManager());
+
+    this.cursor = new LineCursor(workspace);
+    this.cursor.install();
 
     // Ensure that only the root SVG G (group) has a tab index.
     this.injectionDivTabIndex = workspace
@@ -124,10 +127,7 @@ export class KeyboardNavigation {
         .setAttribute('tabindex', this.injectionDivTabIndex);
     }
 
-    if (this.originalCursor) {
-      const markerManager = this.workspace.getMarkerManager();
-      markerManager.setCursor(this.originalCursor);
-    }
+    this.cursor.uninstall();
 
     this.workspace.setTheme(this.originalTheme);
 
