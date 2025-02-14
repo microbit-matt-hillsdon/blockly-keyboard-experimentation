@@ -6,16 +6,24 @@
 
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
-import {installCursor} from './line_cursor';
 import * as Constants from './constants';
 
-export interface IExternalToolbox {
+export interface ExternalToolbox {
   focus(): void;
 }
 
-export interface IKeyboardNavigationOptions {
-  externalToolbox?: IExternalToolbox;
-}
+import {CursorOptions, LineCursor} from './line_cursor';
+
+/** Options object for KeyboardNavigation instances. */
+export type NavigationOptions = {
+  cursor?: Partial<CursorOptions>;
+  externalToolbox?: ExternalToolbox;
+};
+
+/** Default options for LineCursor instances. */
+const defaultOptions: NavigationOptions = {
+  cursor: {},
+};
 
 /** Plugin for keyboard navigation. */
 export class KeyboardNavigation {
@@ -32,6 +40,9 @@ export class KeyboardNavigation {
   /** Keyboard navigation controller instance for the workspace. */
   private navigationController: NavigationController;
 
+  /** Cursor for the main workspace. */
+  private cursor: LineCursor;
+
   /**
    * These fields are used to preserve the workspace's initial state to restore
    * it when/if keyboard navigation is disabled.
@@ -39,7 +50,6 @@ export class KeyboardNavigation {
   private injectionDivTabIndex: string | null;
   private workspaceParentTabIndex: string | null;
   private originalTheme: Blockly.Theme;
-  private originalCursor: Blockly.Cursor | null;
 
   /**
    * Constructs the keyboard navigation.
@@ -50,9 +60,12 @@ export class KeyboardNavigation {
    */
   constructor(
     workspace: Blockly.WorkspaceSvg,
-    options: IKeyboardNavigationOptions = {},
+    options: NavigationOptions,
   ) {
     this.workspace = workspace;
+
+    // Regularise options and apply defaults.
+    options = {...defaultOptions, ...options};
 
     this.navigationController = new NavigationController(options);
     this.navigationController.init();
@@ -62,8 +75,9 @@ export class KeyboardNavigation {
 
     this.originalTheme = workspace.getTheme();
     this.setGlowTheme();
-    this.originalCursor = workspace.getMarkerManager().getCursor();
-    installCursor(workspace.getMarkerManager());
+
+    this.cursor = new LineCursor(workspace, options.cursor);
+    this.cursor.install();
 
     // Ensure that only the root SVG G (group) has a tab index.
     this.injectionDivTabIndex = workspace
@@ -116,18 +130,19 @@ export class KeyboardNavigation {
       this.workspace
         .getParentSvg()
         .setAttribute('tabindex', this.workspaceParentTabIndex);
+    } else {
+      this.workspace.getParentSvg().removeAttribute('tabindex');
     }
 
     if (this.injectionDivTabIndex) {
       this.workspace
         .getInjectionDiv()
         .setAttribute('tabindex', this.injectionDivTabIndex);
+    } else {
+      this.workspace.getInjectionDiv().removeAttribute('tabindex');
     }
 
-    if (this.originalCursor) {
-      const markerManager = this.workspace.getMarkerManager();
-      markerManager.setCursor(this.originalCursor);
-    }
+    this.cursor.uninstall();
 
     this.workspace.setTheme(this.originalTheme);
 

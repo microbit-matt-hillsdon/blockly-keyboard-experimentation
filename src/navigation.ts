@@ -17,7 +17,7 @@ import {
   registrationType as cursorRegistrationType,
   FlyoutCursor,
 } from './flyout_cursor';
-import {IKeyboardNavigationOptions} from './index';
+import {NavigationOptions} from './index';
 import {PassiveFocus} from './passive_focus';
 
 /**
@@ -84,7 +84,7 @@ export class Navigation {
    * Constructor for keyboard navigation.
    * @param options Options.
    */
-  constructor(private options: IKeyboardNavigationOptions) {
+  constructor(private options: NavigationOptions) {
     this.wsChangeWrapper = this.workspaceChangeListener.bind(this);
     this.flyoutChangeWrapper = this.flyoutChangeListener.bind(this);
   }
@@ -762,6 +762,8 @@ export class Navigation {
           movingBlock,
           stationaryBlock.previousConnection,
         );
+      } else if (stationaryBlock.outputConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
       }
     }
     this.warn('Unexpected state in tryToConnectNodes.');

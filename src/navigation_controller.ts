@@ -29,7 +29,7 @@ import {Navigation} from './navigation';
 import {Announcer} from './announcer';
 import {LineCursor} from './line_cursor';
 import {ShortcutDialog} from './shortcut_dialog';
-import {IKeyboardNavigationOptions} from './index';
+import {NavigationOptions} from './index';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -59,7 +59,7 @@ export class NavigationController {
     | typeof Blockly.Toolbox.prototype.onShortcut
     | null = null;
 
-  constructor(options: IKeyboardNavigationOptions = {}) {
+  constructor(options: NavigationOptions) {
     this.navigation = new Navigation(options);
   }
 
