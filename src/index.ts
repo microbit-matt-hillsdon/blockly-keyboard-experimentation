@@ -6,13 +6,12 @@
 
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
+import {CursorOptions, LineCursor} from './line_cursor';
 import * as Constants from './constants';
 
 export interface ExternalToolbox {
   focus(): void;
 }
-
-import {CursorOptions, LineCursor} from './line_cursor';
 
 /** Options object for KeyboardNavigation instances. */
 export type NavigationOptions = {
