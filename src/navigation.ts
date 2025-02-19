@@ -610,20 +610,18 @@ export class Navigation {
     if (!newBlock) {
       return;
     }
-    if (!this.markedNode) {
-      this.warn('No marked node when inserting from flyout.');
-      return;
-    }
-    if (
-      !this.tryToConnectNodes(
-        workspace,
-        this.markedNode,
-        Blockly.ASTNode.createBlockNode(newBlock)!,
-      )
-    ) {
-      this.warn(
-        'Something went wrong while inserting a block from the flyout.',
-      );
+    if (this.markedNode) {
+      if (
+        !this.tryToConnectNodes(
+          workspace,
+          this.markedNode,
+          Blockly.ASTNode.createBlockNode(newBlock)!,
+        )
+      ) {
+        this.warn(
+          'Something went wrong while inserting a block from the flyout.',
+        );
+      }
     }
 
     this.focusWorkspace(workspace);
@@ -1468,12 +1466,14 @@ function fakeEventForNode(node: Blockly.ASTNode): PointerEvent {
  * @returns True if we showed the editor, false otherwise.
  */
 function tryShowFullBlockFieldEditor(block: Blockly.Block): boolean {
-  for (const input of block.inputList) {
-    for (const field of input.fieldRow) {
-      // @ts-expect-error isFullBlockField is a protected method.
-      if (field.isClickable() && field.isFullBlockField()) {
-        field.showEditor();
-        return true;
+  if (block.isSimpleReporter()) {
+    for (const input of block.inputList) {
+      for (const field of input.fieldRow) {
+        // @ts-expect-error isFullBlockField is a protected method.
+        if (field.isClickable() && field.isFullBlockField()) {
+          field.showEditor();
+          return true;
+        }
       }
     }
   }
