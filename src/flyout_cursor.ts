@@ -17,28 +17,40 @@ import * as Blockly from 'blockly/core';
  * This cursor only allows a user to go to the previous or next stack.
  */
 export class FlyoutCursor extends Blockly.Cursor {
-  private flyout: Blockly.IFlyout;
   /**
    * The constructor for the FlyoutCursor.
    */
-  constructor(private readonly workspace: Blockly.WorkspaceSvg | any) {
+  constructor() {
     super();
-    this.flyout = this.workspace.targetWorkspace.getFlyout();
   }
 
   /**
-   * Set correct height to enable edge scrolling
+   * Scrolls to reveal the node.
+   *
+   * @param newNode The cursor's current node.
    */
-  edgeScrollY(newNode: Blockly.ASTNode) {
-    const wsHeight = this.flyout.getHeight();
-    const newNodeBlock: Blockly.Block | any = newNode.getSourceBlock();
-    const BlockBottomToTop =
-      newNodeBlock.getRelativeToSurfaceXY().y + newNodeBlock.height + 10;
+  private scrollIntoView(newNode: Blockly.ASTNode) {
+    const sourceBlock = newNode.getSourceBlock() as Blockly.BlockSvg | null;
+    if (!sourceBlock) return;
+    const sourceBlockWorkspace = newNode.getSourceBlock()?.workspace as
+      | Blockly.WorkspaceSvg
+      | undefined;
+    const flyout = sourceBlockWorkspace?.targetWorkspace?.getFlyout();
+    if (!flyout) return;
+
+    const wsHeight = flyout.getHeight();
+    const blockBottomOffset =
+      sourceBlock.getRelativeToSurfaceXY().y + sourceBlock.height + 20;
     const scrollY =
-      BlockBottomToTop > wsHeight
-        ? wsHeight - BlockBottomToTop
-        : BlockBottomToTop;
-    this.flyout.getWorkspace().scroll(0, scrollY);
+      blockBottomOffset > wsHeight
+        ? wsHeight - blockBottomOffset
+        : blockBottomOffset;
+    flyout.getWorkspace().scroll(0, scrollY);
+  }
+
+  setCurNode(newNode: Blockly.ASTNode): void {
+    super.setCurNode(newNode);
+    this.scrollIntoView(newNode);
   }
 
   /**
@@ -55,7 +67,6 @@ export class FlyoutCursor extends Blockly.Cursor {
     const newNode = curNode.next();
 
     if (newNode) {
-      this.edgeScrollY(newNode);
       this.setCurNode(newNode);
     }
     return newNode;
@@ -66,17 +77,8 @@ export class FlyoutCursor extends Blockly.Cursor {
    *
    * @returns Always null.
    */
-  override in(): Blockly.ASTNode | null {
-    const curNode = this.getCurNode();
-    if (!curNode) {
-      return null;
-    }
-    const newNode = curNode.in();
-    if (newNode) {
-      this.edgeScrollY(newNode);
-      this.setCurNode(newNode);
-    }
-    return newNode;
+  override in(): null {
+    return null;
   }
 
   /**
@@ -91,8 +93,8 @@ export class FlyoutCursor extends Blockly.Cursor {
       return null;
     }
     const newNode = curNode.prev();
+
     if (newNode) {
-      this.edgeScrollY(newNode);
       this.setCurNode(newNode);
     }
     return newNode;
@@ -103,17 +105,8 @@ export class FlyoutCursor extends Blockly.Cursor {
    *
    * @returns Always null.
    */
-  override out(): Blockly.ASTNode | null {
-    const curNode = this.getCurNode();
-    if (!curNode) {
-      return null;
-    }
-    let newNode = curNode.out();
-    if (newNode) {
-      this.edgeScrollY(newNode);
-      this.setCurNode(newNode);
-    }
-    return newNode;
+  override out(): null {
+    return null;
   }
 }
 
