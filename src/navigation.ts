@@ -18,6 +18,7 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
+import {Rect} from 'node_modules/blockly/core/utils';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -544,7 +545,7 @@ export class Navigation {
    *  - Resume editing by returning the cursor to its previous location, if any.
    *  - Move the cursor to the top connection point on on the first top block.
    *  - Move the cursor to the default location on the workspace.
-   * 
+   *
    * @param workspace The main Blockly workspace.
    * @param keepPosition Whether to retain the cursor's previous position.
    */
@@ -623,6 +624,78 @@ export class Navigation {
         );
       }
     }
+
+    workspace.setResizesEnabled(false);
+    Blockly.Events.setGroup(true);
+
+    const topBlocks = workspace
+      .getTopBlocks(true)
+      .filter((block) => block.id !== newBlock.id);
+    const allBlockBounds = topBlocks.map((block) =>
+      block.getBoundingRectangle(),
+    );
+
+    const toolboxWidth = workspace.getToolbox()?.getWidth();
+    const workspaceWidth =
+      workspace.getParentSvg().clientWidth - (toolboxWidth ?? 0);
+    const workspaceHeight = workspace.getParentSvg().clientHeight;
+    const {height: newBlockHeight, width: newBlockWidth} =
+      newBlock.getHeightWidth();
+
+    const getNextIntersectingBlock = function (
+      newBlockRect: Rect,
+    ): Rect | null {
+      for (const rect of allBlockBounds) {
+        if (newBlockRect.intersects(rect)) {
+          return rect;
+        }
+      }
+      return null;
+    };
+
+    let cursorY = 0;
+    let cursorX = 0;
+    // @ts-expect-error workspace.renderer is a private method.
+    const minBlockHeight = workspace.renderer.getConstants().MIN_BLOCK_HEIGHT;
+    // @ts-expect-error workspace.renderer is a private method.
+    const minBlockWidth = workspace.renderer.getConstants().MIN_BLOCK_WIDTH;
+    // Make the initial movement of shifting the block to its best possible position.
+    let boundingRect = newBlock.getBoundingRectangle();
+    newBlock.moveBy(cursorX - boundingRect.left, cursorY - boundingRect.top, [
+      'cleanup',
+    ]);
+    newBlock.snapToGrid();
+
+    boundingRect = newBlock.getBoundingRectangle();
+    let conflictingRect = getNextIntersectingBlock(boundingRect);
+    while (conflictingRect != null) {
+      const newCursorX =
+        conflictingRect.left + conflictingRect.getWidth() + minBlockWidth;
+      const newCursorY =
+        conflictingRect.top + conflictingRect.getHeight() + minBlockHeight;
+      if (newCursorX + newBlockWidth <= workspaceWidth) {
+        cursorX = newCursorX;
+      } else if (newCursorY + newBlockHeight <= workspaceHeight) {
+        cursorY = newCursorY;
+        cursorX = 0;
+      } else {
+        // We need to put the block somewhere and scroll to it.
+        // Move the block off screen vertically for now.
+        cursorY = newCursorY;
+        cursorX = 0;
+      }
+      newBlock.moveBy(cursorX - boundingRect.left, cursorY - boundingRect.top, [
+        'cleanup',
+      ]);
+      newBlock.snapToGrid();
+      boundingRect = newBlock.getBoundingRectangle();
+      conflictingRect = getNextIntersectingBlock(boundingRect);
+    }
+
+    Blockly.Events.setGroup(false);
+    workspace.setResizesEnabled(true);
+
+    newBlock.bringToFront();
 
     this.focusWorkspace(workspace);
     workspace.getCursor()!.setCurNode(Blockly.ASTNode.createTopNode(newBlock)!);
