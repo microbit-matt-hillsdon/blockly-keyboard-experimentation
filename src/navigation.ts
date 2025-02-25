@@ -544,7 +544,7 @@ export class Navigation {
    *  - Resume editing by returning the cursor to its previous location, if any.
    *  - Move the cursor to the top connection point on on the first top block.
    *  - Move the cursor to the default location on the workspace.
-   * 
+   *
    * @param workspace The main Blockly workspace.
    * @param keepPosition Whether to retain the cursor's previous position.
    */
@@ -627,6 +627,7 @@ export class Navigation {
     this.focusWorkspace(workspace);
     workspace.getCursor()!.setCurNode(Blockly.ASTNode.createTopNode(newBlock)!);
     this.removeMark(workspace);
+    workspace.cleanUp();
   }
 
   /**
