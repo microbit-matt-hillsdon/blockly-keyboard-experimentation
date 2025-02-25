@@ -607,6 +607,9 @@ export class Navigation {
    *     the block will be placed on.
    */
   insertFromFlyout(workspace: Blockly.WorkspaceSvg) {
+    workspace.setResizesEnabled(false);
+    Blockly.Events.setGroup(true);
+
     const newBlock = this.createNewBlock(workspace);
     if (!newBlock) {
       return;
@@ -628,9 +631,6 @@ export class Navigation {
     const topBlocks = workspace.getTopBlocks(true);
 
     if (topBlocks.findIndex((block) => block.id === newBlock.id) !== -1) {
-      workspace.setResizesEnabled(false);
-      Blockly.Events.setGroup(true);
-
       const initialY = 10;
       const initialX = 10;
 
@@ -697,11 +697,10 @@ export class Navigation {
         boundingRect = newBlock.getBoundingRectangle();
         conflictingRect = getNextIntersectingBlock(boundingRect);
       }
-
-      Blockly.Events.setGroup(false);
-      workspace.setResizesEnabled(true);
-      newBlock.bringToFront();
     }
+    newBlock.bringToFront();
+    Blockly.Events.setGroup(false);
+    workspace.setResizesEnabled(true);
 
     this.focusWorkspace(workspace);
     workspace.getCursor()!.setCurNode(Blockly.ASTNode.createTopNode(newBlock)!);
