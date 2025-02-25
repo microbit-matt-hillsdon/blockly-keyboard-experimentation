@@ -625,77 +625,83 @@ export class Navigation {
       }
     }
 
-    workspace.setResizesEnabled(false);
-    Blockly.Events.setGroup(true);
+    const topBlocks = workspace.getTopBlocks(true);
 
-    const topBlocks = workspace
-      .getTopBlocks(true)
-      .filter((block) => block.id !== newBlock.id);
-    const allBlockBounds = topBlocks.map((block) =>
-      block.getBoundingRectangle(),
-    );
+    if (topBlocks.findIndex((block) => block.id === newBlock.id) !== -1) {
+      workspace.setResizesEnabled(false);
+      Blockly.Events.setGroup(true);
 
-    const toolboxWidth = workspace.getToolbox()?.getWidth();
-    const workspaceWidth =
-      workspace.getParentSvg().clientWidth - (toolboxWidth ?? 0);
-    const workspaceHeight = workspace.getParentSvg().clientHeight;
-    const {height: newBlockHeight, width: newBlockWidth} =
-      newBlock.getHeightWidth();
+      const initialY = 10;
+      const initialX = 10;
 
-    const getNextIntersectingBlock = function (
-      newBlockRect: Rect,
-    ): Rect | null {
-      for (const rect of allBlockBounds) {
-        if (newBlockRect.intersects(rect)) {
-          return rect;
+      const filteredTopBlocks = workspace
+        .getTopBlocks(true)
+        .filter((block) => block.id !== newBlock.id);
+      const allBlockBounds = filteredTopBlocks.map((block) =>
+        block.getBoundingRectangle(),
+      );
+
+      const toolboxWidth = workspace.getToolbox()?.getWidth();
+      const workspaceWidth =
+        workspace.getParentSvg().clientWidth - (toolboxWidth ?? 0);
+      const workspaceHeight = workspace.getParentSvg().clientHeight;
+      const {height: newBlockHeight, width: newBlockWidth} =
+        newBlock.getHeightWidth();
+
+      const getNextIntersectingBlock = function (
+        newBlockRect: Rect,
+      ): Rect | null {
+        for (const rect of allBlockBounds) {
+          if (newBlockRect.intersects(rect)) {
+            return rect;
+          }
         }
-      }
-      return null;
-    };
+        return null;
+      };
 
-    let cursorY = 0;
-    let cursorX = 0;
-    // @ts-expect-error workspace.renderer is a private method.
-    const minBlockHeight = workspace.renderer.getConstants().MIN_BLOCK_HEIGHT;
-    // @ts-expect-error workspace.renderer is a private method.
-    const minBlockWidth = workspace.renderer.getConstants().MIN_BLOCK_WIDTH;
-    // Make the initial movement of shifting the block to its best possible position.
-    let boundingRect = newBlock.getBoundingRectangle();
-    newBlock.moveBy(cursorX - boundingRect.left, cursorY - boundingRect.top, [
-      'cleanup',
-    ]);
-    newBlock.snapToGrid();
-
-    boundingRect = newBlock.getBoundingRectangle();
-    let conflictingRect = getNextIntersectingBlock(boundingRect);
-    while (conflictingRect != null) {
-      const newCursorX =
-        conflictingRect.left + conflictingRect.getWidth() + minBlockWidth;
-      const newCursorY =
-        conflictingRect.top + conflictingRect.getHeight() + minBlockHeight;
-      if (newCursorX + newBlockWidth <= workspaceWidth) {
-        cursorX = newCursorX;
-      } else if (newCursorY + newBlockHeight <= workspaceHeight) {
-        cursorY = newCursorY;
-        cursorX = 0;
-      } else {
-        // We need to put the block somewhere and scroll to it.
-        // Move the block off screen vertically for now.
-        cursorY = newCursorY;
-        cursorX = 0;
-      }
+      let cursorY = initialY;
+      let cursorX = initialX;
+      // @ts-expect-error workspace.renderer is a private method.
+      const minBlockHeight = workspace.renderer.getConstants().MIN_BLOCK_HEIGHT;
+      // Make the initial movement of shifting the block to its best possible position.
+      let boundingRect = newBlock.getBoundingRectangle();
       newBlock.moveBy(cursorX - boundingRect.left, cursorY - boundingRect.top, [
         'cleanup',
       ]);
       newBlock.snapToGrid();
+
       boundingRect = newBlock.getBoundingRectangle();
-      conflictingRect = getNextIntersectingBlock(boundingRect);
+      let conflictingRect = getNextIntersectingBlock(boundingRect);
+      while (conflictingRect != null) {
+        const newCursorX =
+          conflictingRect.left + conflictingRect.getWidth() + 120;
+        const newCursorY =
+          conflictingRect.top + conflictingRect.getHeight() + minBlockHeight;
+        if (newCursorX + newBlockWidth <= workspaceWidth) {
+          cursorX = newCursorX;
+        } else if (newCursorY + newBlockHeight <= workspaceHeight) {
+          cursorY = newCursorY;
+          cursorX = initialX;
+        } else {
+          // We need to put the block somewhere and scroll to it.
+          // Move the block off screen vertically for now.
+          cursorY = newCursorY;
+          cursorX = initialX;
+        }
+        newBlock.moveBy(
+          cursorX - boundingRect.left,
+          cursorY - boundingRect.top,
+          ['cleanup'],
+        );
+        newBlock.snapToGrid();
+        boundingRect = newBlock.getBoundingRectangle();
+        conflictingRect = getNextIntersectingBlock(boundingRect);
+      }
+
+      Blockly.Events.setGroup(false);
+      workspace.setResizesEnabled(true);
+      newBlock.bringToFront();
     }
-
-    Blockly.Events.setGroup(false);
-    workspace.setResizesEnabled(true);
-
-    newBlock.bringToFront();
 
     this.focusWorkspace(workspace);
     workspace.getCursor()!.setCurNode(Blockly.ASTNode.createTopNode(newBlock)!);
