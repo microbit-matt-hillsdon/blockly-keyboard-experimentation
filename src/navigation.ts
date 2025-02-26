@@ -18,7 +18,6 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
-import {Rect} from 'node_modules/blockly/core/utils';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -649,8 +648,8 @@ export class Navigation {
         newBlock.getHeightWidth();
 
       const getNextIntersectingBlock = function (
-        newBlockRect: Rect,
-      ): Rect | null {
+        newBlockRect: Blockly.utils.Rect,
+      ): Blockly.utils.Rect | null {
         for (const rect of allBlockBounds) {
           if (newBlockRect.intersects(rect)) {
             return rect;
