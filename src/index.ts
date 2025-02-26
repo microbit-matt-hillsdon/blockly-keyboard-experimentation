@@ -182,6 +182,15 @@ export class KeyboardNavigation {
   }
 
   /**
+   * Toggles visibility of a help dialog for the keyboard shortcuts.
+   *
+   * This was added for user testing in MakeCode and needs further discussion.
+   */
+  toggleShortcutDialog(): void {
+    this.navigationController.shortcutDialog.toggle();
+  }
+
+  /**
    * Update the theme to match the selected glow colour to the cursor
    * colour.
    */
