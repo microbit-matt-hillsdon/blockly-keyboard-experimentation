@@ -57,10 +57,7 @@ export class KeyboardNavigation {
    *     be added to.
    * @param options Options.
    */
-  constructor(
-    workspace: Blockly.WorkspaceSvg,
-    options: NavigationOptions,
-  ) {
+  constructor(workspace: Blockly.WorkspaceSvg, options: NavigationOptions) {
     this.workspace = workspace;
 
     // Regularise options and apply defaults.
@@ -179,6 +176,13 @@ export class KeyboardNavigation {
    */
   onExternalToolboxBlur(): void {
     this.workspace.keyboardAccessibilityMode = true;
+    if (
+      this.navigationController.navigation.getState(this.workspace) !==
+      Constants.STATE.FLYOUT
+    ) {
+      // We can likely call blurToolboxAndFlyout once https://github.com/google/blockly-keyboard-experimentation/pull/225 lands
+      this.navigationController.navigation.resetFlyout(this.workspace, true);
+    }
   }
 
   /**
