@@ -182,7 +182,7 @@ export class KeyboardNavigation {
   }
 
   /**
-   * Toggles visibility of a help dialog for the keyboard shortcuts.
+   * Toggle visibility of a help dialog for the keyboard shortcuts.
    *
    * This was added for user testing in MakeCode and needs further discussion.
    */
