@@ -31,7 +31,7 @@ export interface ToastOptions {
  * @param options Options.
  */
 export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
-  const {message, duration = 5000} = options;
+  const {message, duration = 7500} = options;
   const className = 'blocklyToast';
   workspace.getInjectionDiv().querySelector(`.${className}`)?.remove();
 
@@ -39,17 +39,9 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
   toast.className = className;
   toast.setAttribute('role', 'status');
   toast.setAttribute('aria-live', 'polite');
-  const {
-    FIELD_TEXT_FONTWEIGHT: fontWeight,
-    FIELD_TEXT_FONTFAMILY: fontFamily,
-    FIELD_TEXT_FONTSIZE: fontSizePt,
-  } = workspace.getRenderer().getConstants();
   assignStyle(toast, {
-    fontFamily,
-    fontWeight,
-    fontSize: `${fontSizePt}pt`,
+    fontSize: '1.2rem',
     position: 'absolute',
-    maxWidth: '20em',
     bottom: '2rem',
     right: '-50rem',
     padding: '1rem',
@@ -71,6 +63,9 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
     }),
   );
   const messageElement = toast.appendChild(document.createElement('div'));
+  assignStyle(messageElement, {
+    maxWidth: '18rem',
+  });
   messageElement.innerText = message;
   const closeButton = toast.appendChild(document.createElement('button'));
   assignStyle(closeButton, {

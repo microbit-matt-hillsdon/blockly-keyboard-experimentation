@@ -19,6 +19,7 @@ import {
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
 import {toast} from './toast';
+import { formatMetaShortcut } from './shortcut_formatting';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -1271,9 +1272,9 @@ export class Navigation {
     } else if (nodeType === Blockly.ASTNode.types.BLOCK) {
       const block = curNode.getLocation() as Blockly.Block;
       if (!tryShowFullBlockFieldEditor(block)) {
-        const metaKey = navigator.platform.startsWith('Mac') ? '⌘' : 'Ctrl';
-        const canMoveInHint = `Press right arrow to move in or ${metaKey} + Enter for more options`;
-        const genericHint = `Press ${metaKey} + Enter for options`;
+        const shortcut = formatMetaShortcut("Enter")
+        const canMoveInHint = `Press right arrow to move in or ${shortcut} for more options`;
+        const genericHint = `Press ${shortcut} for options`;
         const message =
           curNode.in()?.getSourceBlock() === block
             ? canMoveInHint
