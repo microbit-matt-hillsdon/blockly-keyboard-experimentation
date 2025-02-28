@@ -554,7 +554,7 @@ export class Navigation {
    *  - Resume editing by returning the cursor to its previous location, if any.
    *  - Move the cursor to the top connection point on on the first top block.
    *  - Move the cursor to the default location on the workspace.
-   * 
+   *
    * @param workspace The main Blockly workspace.
    * @param keepPosition Whether to retain the cursor's previous position.
    */
@@ -617,9 +617,7 @@ export class Navigation {
    */
   insertFromFlyout(workspace: Blockly.WorkspaceSvg) {
     const newBlock = this.createNewBlock(workspace);
-    if (!newBlock) {
-      return;
-    }
+    if (!newBlock) return;
     if (this.markedNode) {
       if (
         !this.tryToConnectNodes(
@@ -635,7 +633,9 @@ export class Navigation {
     }
 
     this.focusWorkspace(workspace);
-    workspace.getCursor()!.setCurNode(Blockly.ASTNode.createTopNode(newBlock)!);
+    workspace
+      .getCursor()!
+      .setCurNode(Blockly.ASTNode.createBlockNode(newBlock)!);
     this.removeMark(workspace);
   }
 
@@ -1357,6 +1357,7 @@ export class Navigation {
       // case Blockly.ASTNode.types.INPUT:
       case Blockly.ASTNode.types.NEXT:
       case Blockly.ASTNode.types.PREVIOUS:
+      case Blockly.ASTNode.types.INPUT:
         const connection = node.getLocation() as Blockly.Connection;
         rtl = connection.getSourceBlock().RTL;
 
@@ -1397,6 +1398,20 @@ export class Navigation {
     if (!menuOptions?.length) return true;
     const fakeEvent = fakeEventForNode(node);
     Blockly.ContextMenu.show(fakeEvent, menuOptions, rtl, workspace);
+    setTimeout(() => {
+      Blockly.WidgetDiv.getDiv()
+        ?.querySelector('.blocklyMenu')
+        ?.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            code: 'ArrowDown',
+            keyCode: Blockly.utils.KeyCodes.DOWN,
+            which: Blockly.utils.KeyCodes.DOWN,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    }, 10);
     return true;
   }
 
@@ -1475,7 +1490,8 @@ function fakeEventForNode(node: Blockly.ASTNode): PointerEvent {
       return fakeEventForBlockNode(node);
     case Blockly.ASTNode.types.NEXT:
     case Blockly.ASTNode.types.PREVIOUS:
-      return fakeEventForStackNode(node);
+    case Blockly.ASTNode.types.INPUT:
+      return fakeEventForConnectionNode(node);
     default:
       throw new TypeError('unhandled node type');
   }
@@ -1523,7 +1539,7 @@ function fakeEventForBlockNode(node: Blockly.ASTNode): PointerEvent {
 
 /**
  * Create a fake PointerEvent for opening the action menu for the
- * given ASTNode of type NEXT or PREVIOUS.
+ * given ASTNode of type NEXT, PREVIOUS or INPUT.
  *
  * For now this just puts the action menu in the same place as the
  * context menu for the source block.
@@ -1531,24 +1547,36 @@ function fakeEventForBlockNode(node: Blockly.ASTNode): PointerEvent {
  * @param node The node to open the action menu for.
  * @returns A synthetic pointerdown PointerEvent.
  */
-function fakeEventForStackNode(node: Blockly.ASTNode): PointerEvent {
+function fakeEventForConnectionNode(node: Blockly.ASTNode): PointerEvent {
   if (
     node.getType() !== Blockly.ASTNode.types.NEXT &&
-    node.getType() !== Blockly.ASTNode.types.PREVIOUS
+    node.getType() !== Blockly.ASTNode.types.PREVIOUS &&
+    node.getType() !== Blockly.ASTNode.types.INPUT
   ) {
-    throw new TypeError(
-      'can only create PointerEvents for NEXT / PREVIOUS nodes',
-    );
+    throw new TypeError('can only create PointerEvents for connection nodes');
   }
 
   const connection = node.getLocation() as Blockly.Connection;
+  const block = connection.getSourceBlock();
+  const workspace = block.workspace as Blockly.WorkspaceSvg;
 
-  return fakeEventForBlockNode(
-    new Blockly.ASTNode(
-      Blockly.ASTNode.types.BLOCK,
-      connection.getSourceBlock(),
-    ),
+  if (typeof connection.x !== 'number') {
+    // No coordinates for connection?  Fall back to the parent block.
+    const blockNode = new Blockly.ASTNode(Blockly.ASTNode.types.BLOCK, block);
+    return fakeEventForBlockNode(blockNode);
+  }
+  const connectionWSCoords = new Blockly.utils.Coordinate(
+    connection.x,
+    connection.y,
   );
+  const connectionScreenCoords = Blockly.utils.svgMath.wsToScreenCoordinates(
+    workspace,
+    connectionWSCoords,
+  );
+  return new PointerEvent('pointerdown', {
+    clientX: connectionScreenCoords.x + 5,
+    clientY: connectionScreenCoords.y + 5,
+  });
 }
 
 /**
