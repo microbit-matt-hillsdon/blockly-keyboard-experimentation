@@ -164,7 +164,9 @@ export class Navigation {
       cursorRegistrationName,
     );
     if (FlyoutCursorClass) {
-      flyoutWorkspace.getMarkerManager().setCursor(new FlyoutCursorClass());
+      flyoutWorkspace
+        .getMarkerManager()
+        .setCursor(new FlyoutCursorClass(flyout));
     }
   }
 
@@ -1124,6 +1126,12 @@ export class Navigation {
       this.log('Cannot disconnect a shadow block');
       return;
     }
+
+    if (!inferiorConnection.getSourceBlock().isMovable()) {
+      this.log('Cannot disconnect an immovable block');
+      return;
+    }
+
     superiorConnection.disconnect();
     inferiorConnection.bumpAwayFrom(superiorConnection);
 
@@ -1367,7 +1375,12 @@ export class Navigation {
         const insertAction =
           Blockly.ContextMenuRegistry.registry.getItem('insert');
         if (!insertAction) throw new Error("can't find insert action");
-        const possibleOptions = [insertAction /* etc.*/];
+
+        const pasteAction = Blockly.ContextMenuRegistry.registry.getItem(
+          'blockPasteFromContextMenu',
+        );
+        if (!pasteAction) throw new Error("can't find paste action");
+        const possibleOptions = [insertAction, pasteAction /* etc.*/];
 
         // Check preconditions and get menu texts.
         const scope = {
@@ -1462,7 +1475,7 @@ export class Navigation {
     );
     if (typeof buttonCallback === 'function') {
       buttonCallback(button);
-    } else {
+    } else if (!button.isLabel()) {
       throw new Error('No callback function found for flyout button.');
     }
   }
