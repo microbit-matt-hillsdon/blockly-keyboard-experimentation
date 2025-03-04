@@ -523,8 +523,7 @@ export class Navigation {
       return;
     }
 
-    const curNode = cursor.getCurNode();
-    if (curNode && curNode.getWsCoordinate() && keepPosition) {
+    if (cursor.getCurNode() && keepPosition) {
       // Retain the cursor's previous position since it's set.
       return;
     }
