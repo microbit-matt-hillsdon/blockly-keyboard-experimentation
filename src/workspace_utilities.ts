@@ -11,25 +11,16 @@ import * as Blockly from 'blockly/core';
  *
  * In the case of small workspaces/large bounds, this function prioritizes
  * getting the top left corner of the bounds into view. It also adds some
- * padding around the bounds to allow the element to be comfortably in view.
+ * padding when scrolling to allow the element to be comfortably in view.
  *
  * @param bounds A rectangle to scroll into view, as best as possible.
  * @param workspace The workspace to scroll the given bounds into view in.
  */
 export function scrollBoundsIntoView(
-  originalBounds: Blockly.utils.Rect,
+  bounds: Blockly.utils.Rect,
   workspace: Blockly.WorkspaceSvg,
 ) {
   const scale = workspace.getScale();
-
-  const bounds = originalBounds.clone();
-
-  // Add some padding to the bounds so the element is scrolled comfortably
-  // into view.
-  bounds.top -= 10;
-  bounds.bottom += 10;
-  bounds.left -= 10;
-  bounds.right += 10;
 
   const rawViewport = workspace.getMetricsManager().getViewMetrics(true);
   const viewport = new Blockly.utils.Rect(
@@ -49,19 +40,28 @@ export function scrollBoundsIntoView(
     return;
   }
 
+  const paddedBounds = bounds.clone();
+
+  // Add some padding to the bounds so the element is scrolled comfortably
+  // into view.
+  paddedBounds.top -= 10;
+  paddedBounds.bottom += 10;
+  paddedBounds.left -= 10;
+  paddedBounds.right += 10;
+
   let deltaX = 0;
   let deltaY = 0;
 
-  if (bounds.left < viewport.left) {
-    deltaX = viewport.left - bounds.left;
-  } else if (bounds.right > viewport.right) {
-    deltaX = viewport.right - bounds.right;
+  if (paddedBounds.left < viewport.left) {
+    deltaX = viewport.left - paddedBounds.left;
+  } else if (paddedBounds.right > viewport.right) {
+    deltaX = viewport.right - paddedBounds.right;
   }
 
-  if (bounds.top < viewport.top) {
-    deltaY = viewport.top - bounds.top;
-  } else if (bounds.bottom > viewport.bottom) {
-    deltaY = viewport.bottom - bounds.bottom;
+  if (paddedBounds.top < viewport.top) {
+    deltaY = viewport.top - paddedBounds.top;
+  } else if (paddedBounds.bottom > viewport.bottom) {
+    deltaY = viewport.bottom - paddedBounds.bottom;
   }
 
   deltaX *= scale;

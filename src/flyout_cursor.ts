@@ -103,7 +103,9 @@ export class FlyoutCursor extends Blockly.Cursor {
 
     if (!(bounds instanceof Blockly.utils.Rect)) return;
 
-    scrollBoundsIntoView(bounds, this.flyout.getWorkspace());
+    if (window.event instanceof KeyboardEvent) {
+      scrollBoundsIntoView(bounds, this.flyout.getWorkspace());
+    }
   }
 }
 
