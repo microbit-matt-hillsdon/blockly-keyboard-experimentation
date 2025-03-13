@@ -614,10 +614,21 @@ export class Navigation {
       // Insert the moving block above the stationary block, if the
       // appropriate connections exist.
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
-      if (stationaryBlock.nextConnection) {
-        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
-      } else if (stationaryBlock.outputConnection) {
+      console.log(stationaryBlock);
+      console.log(stationaryBlock.inputList);
+
+      if (stationaryBlock.outputConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
+      } else if (
+        stationaryBlock.inputList.length === 1 &&
+        stationaryBlock.inputList[0].connection
+      ) {
+        return this.insertBlock(
+          movingBlock,
+          stationaryBlock.inputList[0].connection as Blockly.RenderedConnection,
+        );
+      } else if (stationaryBlock.nextConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
       }
     }
     this.warn(`Unexpected case in tryToConnectBlock ${stationaryType}.`);
