@@ -623,9 +623,18 @@ export class Navigation {
         stationaryBlock.inputList.length === 1 &&
         stationaryBlock.inputList[0].connection
       ) {
+        let connection = stationaryBlock.inputList[0].connection;
+        // Move to the end of the statement blocks.
+        while (
+          connection.targetBlock() &&
+          connection.targetBlock()?.nextConnection
+        ) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          connection = connection.targetBlock()!.nextConnection!;
+        }
         return this.insertBlock(
           movingBlock,
-          stationaryBlock.inputList[0].connection as Blockly.RenderedConnection,
+          connection as Blockly.RenderedConnection,
         );
       } else if (stationaryBlock.nextConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
