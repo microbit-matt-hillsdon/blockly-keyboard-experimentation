@@ -614,11 +614,8 @@ export class Navigation {
       // Insert the moving block above the stationary block, if the
       // appropriate connections exist.
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
-      if (stationaryBlock.previousConnection) {
-        return this.insertBlock(
-          movingBlock,
-          stationaryBlock.previousConnection,
-        );
+      if (stationaryBlock.nextConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
       } else if (stationaryBlock.outputConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
       }
