@@ -590,7 +590,6 @@ export class Navigation {
    * Tries to intelligently connect the blocks or connections
    * represented by the given nodes, based on node types and locations.
    *
-   * @param workspace The main workspace.
    * @param stationaryNode The first node to connect.
    * @param movingBlock The block we're moving.
    * @returns True if the key was handled; false if something went
