@@ -367,11 +367,7 @@ export class Clipboard {
     const block = clipboard.paste(this.copyData, pasteWorkspace) as BlockSvg;
     if (block) {
       if (targetNode) {
-        this.navigation.tryToConnectNodes(
-          pasteWorkspace,
-          targetNode,
-          ASTNode.createBlockNode(block)!,
-        );
+        this.navigation.tryToConnectBlock(targetNode, block);
       }
       this.navigation.removeMark(pasteWorkspace);
       Events.setGroup(false);
