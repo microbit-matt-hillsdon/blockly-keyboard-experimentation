@@ -18,6 +18,7 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
+import {StatementInput} from 'node_modules/blockly/core/inputs';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -611,33 +612,37 @@ export class Navigation {
     } else if (stationaryType === Blockly.ASTNode.types.WORKSPACE) {
       return this.moveBlockToWorkspace(movingBlock, stationaryNode);
     } else if (stationaryType === Blockly.ASTNode.types.BLOCK) {
-      // Insert the moving block above the stationary block, if the
-      // appropriate connections exist.
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
-      console.log(stationaryBlock);
-      console.log(stationaryBlock.inputList);
-
       if (stationaryBlock.outputConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
-      } else if (
-        stationaryBlock.inputList.length === 1 &&
-        stationaryBlock.inputList[0].connection
-      ) {
-        let connection = stationaryBlock.inputList[0].connection;
-        // Move to the end of the statement blocks.
-        while (
-          connection.targetBlock() &&
-          connection.targetBlock()?.nextConnection
-        ) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          connection = connection.targetBlock()!.nextConnection!;
+      }
+      if (stationaryBlock.nextConnection && !movingBlock.outputConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
+      }
+
+      const inputType = movingBlock.outputConnection
+        ? Blockly.inputs.inputTypes.VALUE
+        : Blockly.inputs.inputTypes.STATEMENT;
+      const compatibleInputs = stationaryBlock.inputList.filter(
+        (input) => input.type === inputType,
+      );
+      // This currently doesn't take into account the connection checker.
+      const input =
+        compatibleInputs.find(
+          (input) => input.connection && !input.connection.isConnected(),
+        ) ?? compatibleInputs[0];
+      let connection = input.connection;
+      if (connection) {
+        if (inputType === Blockly.inputs.inputTypes.STATEMENT) {
+          while (connection.targetBlock()?.nextConnection) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            connection = connection.targetBlock()!.nextConnection!;
+          }
         }
         return this.insertBlock(
           movingBlock,
           connection as Blockly.RenderedConnection,
         );
-      } else if (stationaryBlock.nextConnection) {
-        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
       }
     }
     this.warn(`Unexpected case in tryToConnectBlock ${stationaryType}.`);
