@@ -620,7 +620,7 @@ export class Navigation {
       //
       // We currently don't take into account the connection checker here.
       // Note this is not first in navigation order, which may be a
-      // desecendent's input. If we had movement mode on insert perhaps it
+      // descendent's input. If we had movement mode on insert perhaps it
       // should be?
       const inputType = movingBlock.outputConnection
         ? Blockly.inputs.inputTypes.VALUE
