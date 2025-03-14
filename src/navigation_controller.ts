@@ -207,17 +207,17 @@ export class NavigationController {
    * @param workspace the workspace that now has toolbox input focus.
    * @param isFocused whether the environment has browser focus.
    */
-  onToolboxFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
+  onToolboxFocusChange(
+    workspace: WorkspaceSvg,
+    isFocused: boolean,
+    toFlyout: boolean,
+  ) {
     if (!workspace.getToolbox()) return;
     if (isFocused) {
       this.navigation.onFocusToolbox(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.TOOLBOX;
     } else {
-      // We'd like to do this only when we're not moving to the flyout.
-      // So we could know that somehow, or do the tidying up when moving to a
-      // new part of Blocky other than the flyout or leaving Blockly
-
-      //this.navigation.onToolboxBlur(workspace);
+      this.navigation.onToolboxBlur(workspace, toFlyout);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
     }
   }

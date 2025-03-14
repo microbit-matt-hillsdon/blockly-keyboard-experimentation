@@ -509,7 +509,10 @@ export class Navigation {
    *
    * @param workspace The workspace containing the toolbox.
    */
-  onToolboxBlur(workspace: Blockly.WorkspaceSvg) {
+  onToolboxBlur(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
+    if (toFlyout) {
+      return;
+    }
     workspace.hideChaff();
     const reset = !!workspace.getToolbox();
 
