@@ -20,7 +20,7 @@ export class ShortcutDialog {
   open: boolean;
   closeButton: HTMLElement | null;
   /**
-   * Constructor for an Announcer.
+   * Constructor for a dialog that displays available keyboard shortcuts.
    */
   constructor() {
     // For testing purposes, this assumes that the page has a
@@ -34,17 +34,16 @@ export class ShortcutDialog {
   }
 
   getPlatform() {
-    const platform = navigator.platform;
-
-    // Check for Windows platforms
+    const {platform, userAgent} = navigator;
     if (platform.startsWith('Win')) {
       return 'Windows';
     } else if (platform.startsWith('Mac')) {
       return 'macOS';
+    } else if (/\bCrOS\b/.test(userAgent)) {
+      // Order is important because platform matches the Linux case below.
+      return 'ChromeOS';
     } else if (platform.includes('Linux')) {
       return 'Linux';
-    } else if (platform.includes('chromeOS')) {
-      return 'ChromeOS';
     } else {
       return 'Unknown';
     }
@@ -69,11 +68,9 @@ export class ShortcutDialog {
         this.shortcutDialog.querySelectorAll('.key.modifier');
 
       if (modifierKeys.length > 0 && platform) {
-        for (let key of modifierKeys) {
+        for (const key of modifierKeys) {
           key.textContent =
-            Constants.MODIFIER_KEY[
-              platform as keyof typeof Constants.MODIFIER_KEY
-            ];
+            this.getPlatform() === 'macOS' ? '⌘ Command' : 'Ctrl';
         }
       }
     }
@@ -160,6 +157,31 @@ export class ShortcutDialog {
         });
       }
     }
+  }
+
+  /**
+   * Registers an action to list shortcuts with the shortcut registry.
+   */
+  install() {
+    /** List all of the currently registered shortcuts. */
+    const announceShortcut: ShortcutRegistry.KeyboardShortcut = {
+      name: Constants.SHORTCUT_NAMES.LIST_SHORTCUTS,
+      callback: () => {
+        this.toggle();
+        return true;
+      },
+      keyCodes: [Blockly.utils.KeyCodes.SLASH],
+    };
+    ShortcutRegistry.registry.register(announceShortcut);
+  }
+
+  /**
+   * Unregisters the action to list shortcuts.
+   */
+  uninstall() {
+    ShortcutRegistry.registry.unregister(
+      Constants.SHORTCUT_NAMES.LIST_SHORTCUTS,
+    );
   }
 }
 
