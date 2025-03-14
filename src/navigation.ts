@@ -610,41 +610,32 @@ export class Navigation {
     } else if (stationaryType === Blockly.ASTNode.types.WORKSPACE) {
       return this.moveBlockToWorkspace(movingBlock, stationaryNode);
     } else if (stationaryType === Blockly.ASTNode.types.BLOCK) {
-      // 1. Connect statement blocks to next connection.
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
-      if (stationaryBlock.nextConnection && !movingBlock.outputConnection) {
-        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
-      }
 
-      // 2. Connect blocks to first compatible input, preferring non-connected.
-      //
+      // 1. Connect statement blocks to first compatible input.
       // We currently don't take into account the connection checker here.
-      // Note this is not first in navigation order, which may be a
-      // descendent's input. If we had movement mode on insert perhaps it
-      // should be?
-      const inputType = movingBlock.outputConnection
-        ? Blockly.inputs.inputTypes.VALUE
-        : Blockly.inputs.inputTypes.STATEMENT;
-      const compatibleInputs = stationaryBlock.inputList.filter(
-        (input) => input.type === inputType,
-      );
-      const input =
-        compatibleInputs.find(
-          // Should this consider connections to shadow block as not connected?
-          (input) => input.connection && !input.connection.isConnected(),
-        ) ?? (compatibleInputs.length > 0 ? compatibleInputs[0] : undefined);
-      let connection = input?.connection;
-      if (connection) {
-        if (inputType === Blockly.inputs.inputTypes.STATEMENT) {
+      if (!movingBlock.outputConnection) {
+        const compatibleInputs = stationaryBlock.inputList.filter(
+          (input) => input.type === Blockly.inputs.inputTypes.STATEMENT,
+        );
+        const input =
+          compatibleInputs.length > 0 ? compatibleInputs[0] : undefined;
+        let connection = input?.connection;
+        if (connection) {
           while (connection.targetBlock()?.nextConnection) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             connection = connection.targetBlock()!.nextConnection!;
           }
+          return this.insertBlock(
+            movingBlock,
+            connection as Blockly.RenderedConnection,
+          );
         }
-        return this.insertBlock(
-          movingBlock,
-          connection as Blockly.RenderedConnection,
-        );
+      }
+
+      // 2. Connect statement blocks to next connection.
+      if (stationaryBlock.nextConnection && !movingBlock.outputConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
       }
 
       // 3. Output connection. This will wrap around or displace.
