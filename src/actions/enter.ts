@@ -124,13 +124,7 @@ export class EnterAction {
     const newBlock = this.createNewBlock(workspace);
     if (!newBlock) return;
     if (stationaryNode) {
-      if (
-        !this.navigation.tryToConnectNodes(
-          workspace,
-          stationaryNode,
-          ASTNode.createBlockNode(newBlock)!,
-        )
-      ) {
+      if (!this.navigation.tryToConnectBlock(stationaryNode, newBlock)) {
         console.warn(
           'Something went wrong while inserting a block from the flyout.',
         );
