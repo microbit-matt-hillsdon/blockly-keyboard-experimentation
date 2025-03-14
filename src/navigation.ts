@@ -254,6 +254,13 @@ export class Navigation {
         );
         this.handleBlockClickInFlyout(mainWorkspace, block!);
       }
+    } else if (
+      e.type === Blockly.Events.BLOCK_CREATE &&
+      this.getState(mainWorkspace) === Constants.STATE.FLYOUT
+    ) {
+      // This happens when variables are created which recreates the button
+      // invalidating the cursor.
+      this.moveToFirstFlyoutItem(mainWorkspace);
     }
   }
 
@@ -451,22 +458,25 @@ export class Navigation {
    * @param workspace The workspace the flyout is on.
    */
   onFocusFlyout(workspace: Blockly.WorkspaceSvg) {
-    const flyout = workspace.getFlyout();
     this.setState(workspace, Constants.STATE.FLYOUT);
+    this.moveToFirstFlyoutItem(workspace);
+  }
 
-    if (flyout && flyout.getWorkspace()) {
-      const flyoutContents = flyout.getContents();
-      const firstFlyoutItem = flyoutContents[0];
-      if (!firstFlyoutItem) return;
-      if (firstFlyoutItem.button) {
-        const astNode = Blockly.ASTNode.createButtonNode(
-          firstFlyoutItem.button,
-        );
-        this.getFlyoutCursor(workspace)!.setCurNode(astNode!);
-      } else if (firstFlyoutItem.block) {
-        const astNode = Blockly.ASTNode.createStackNode(firstFlyoutItem.block);
-        this.getFlyoutCursor(workspace)!.setCurNode(astNode!);
-      }
+  moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
+    const flyout = workspace.getFlyout();
+    if (!flyout) return;
+    const flyoutCursor = this.getFlyoutCursor(workspace);
+    if (!flyoutCursor) return;
+
+    const flyoutContents = flyout.getContents();
+    const firstFlyoutItem = flyoutContents[0];
+    if (!firstFlyoutItem) return;
+    if (firstFlyoutItem.button) {
+      const astNode = Blockly.ASTNode.createButtonNode(firstFlyoutItem.button);
+      flyoutCursor.setCurNode(astNode!);
+    } else if (firstFlyoutItem.block) {
+      const astNode = Blockly.ASTNode.createStackNode(firstFlyoutItem.block);
+      flyoutCursor.setCurNode(astNode!);
     }
   }
 

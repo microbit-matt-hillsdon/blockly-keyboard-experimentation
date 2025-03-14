@@ -161,6 +161,13 @@ export class KeyboardNavigation {
       contentsDiv?.removeEventListener('blur', this.toolboxBlurListener);
     }
 
+    const flyoutElement = this.workspace
+      .getFlyout()
+      ?.getWorkspace()
+      ?.getSvgGroup();
+    flyoutElement?.removeEventListener('focus', this.flyoutFocusListener);
+    flyoutElement?.removeEventListener('blur', this.flyoutBlurListener);
+
     if (this.workspaceParentTabIndex) {
       this.workspace
         .getParentSvg()
