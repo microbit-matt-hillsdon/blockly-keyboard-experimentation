@@ -28,13 +28,24 @@ const defaultOptions: NavigationOptions = {
 export class KeyboardNavigation {
   /** The workspace. */
   protected workspace: Blockly.WorkspaceSvg;
-  private softWorkspaceFocus = false;
+  /**
+   * Workaround: Tracks when we're focusing the workspace just to get flyout
+   * keyboard navigation working. In this case we need to avoid resetting the
+   * flyout. In future, we hope the flyout can take focus.
+   */
+  private focusingWorkspaceForFlyoutKeyboardNavigation = false;
 
   /** Event handler run when the workspace gains focus. */
   private focusListener: () => void;
 
   /** Event handler run when the workspace loses focus. */
   private blurListener: () => void;
+
+  /** Event handler run when the toolbox gains focus. */
+  private toolboxFocusListener: () => void;
+
+  /** Event handler run when the toolbox loses focus. */
+  private toolboxBlurListener: () => void;
 
   /** Keyboard navigation controller instance for the workspace. */
   private navigationController: NavigationController;
@@ -67,7 +78,6 @@ export class KeyboardNavigation {
     this.navigationController.init();
     this.navigationController.addWorkspace(workspace);
     this.navigationController.enable(workspace);
-    this.navigationController.listShortcuts();
 
     this.originalTheme = workspace.getTheme();
     this.setGlowTheme();
@@ -87,18 +97,39 @@ export class KeyboardNavigation {
     workspace.getParentSvg().setAttribute('tabindex', '-1');
 
     this.focusListener = () => {
-      this.navigationController.setHasFocus(
+      this.navigationController.updateWorkspaceFocus(
         workspace,
         true,
-        this.softWorkspaceFocus,
+        this.focusingWorkspaceForFlyoutKeyboardNavigation,
       );
     };
     this.blurListener = () => {
-      this.navigationController.setHasFocus(workspace, false);
+      this.navigationController.updateWorkspaceFocus(
+        workspace,
+        false,
+        this.focusingWorkspaceForFlyoutKeyboardNavigation,
+      );
     };
 
     workspace.getSvgGroup().addEventListener('focus', this.focusListener);
     workspace.getSvgGroup().addEventListener('blur', this.blurListener);
+
+    this.toolboxFocusListener = () => {
+      this.navigationController.updateToolboxFocus(workspace, true);
+    };
+    this.toolboxBlurListener = () => {
+      this.navigationController.updateToolboxFocus(workspace, false);
+    };
+
+    const toolbox = workspace.getToolbox();
+    if (toolbox != null && toolbox instanceof Blockly.Toolbox) {
+      const contentsDiv = toolbox.HtmlDiv?.querySelector(
+        '.blocklyToolboxContents',
+      );
+      contentsDiv?.addEventListener('focus', this.toolboxFocusListener);
+      contentsDiv?.addEventListener('blur', this.toolboxBlurListener);
+    }
+
     // Temporary workaround for #136.
     // TODO(#136): fix in core.
     workspace.getParentSvg().addEventListener('focus', this.focusListener);
@@ -122,6 +153,15 @@ export class KeyboardNavigation {
     this.workspace
       .getSvgGroup()
       .removeEventListener('focus', this.focusListener);
+
+    const toolbox = this.workspace.getToolbox();
+    if (toolbox != null && toolbox instanceof Blockly.Toolbox) {
+      const contentsDiv = toolbox.HtmlDiv?.querySelector(
+        '.blocklyToolboxContents',
+      );
+      contentsDiv?.removeEventListener('focus', this.toolboxFocusListener);
+      contentsDiv?.removeEventListener('blur', this.toolboxBlurListener);
+    }
 
     if (this.workspaceParentTabIndex) {
       this.workspace
@@ -153,42 +193,25 @@ export class KeyboardNavigation {
    */
   focusFlyout(): void {
     this.navigationController.navigation.focusFlyout(this.workspace);
-    // Focus the workspace after opening a flyout via an external toolbox.
-    // The use of softWorkspaceFocus prevents workspace reset.
-    this.softWorkspaceFocus = true;
+    this.focusingWorkspaceForFlyoutKeyboardNavigation = true;
     (this.workspace.getSvgGroup() as SVGElement).focus();
-    this.softWorkspaceFocus = false;
-  }
-
-  /**
-   * Called when an external toolbox takes the focus.
-   */
-  onExternalToolboxFocus(): void {
-    this.workspace.keyboardAccessibilityMode = false;
-    this.navigationController.navigation.setState(
-      this.workspace,
-      Constants.STATE.TOOLBOX,
-    );
+    this.focusingWorkspaceForFlyoutKeyboardNavigation = false;
   }
 
   /**
    * Called when an external toolbox loses the focus.
    */
   onExternalToolboxBlur(): void {
-    this.workspace.keyboardAccessibilityMode = true;
     if (
       this.navigationController.navigation.getState(this.workspace) !==
       Constants.STATE.FLYOUT
     ) {
-      // We can likely call blurToolboxAndFlyout once https://github.com/google/blockly-keyboard-experimentation/pull/225 lands
       this.navigationController.navigation.resetFlyout(this.workspace, true);
     }
   }
 
   /**
    * Toggle visibility of a help dialog for the keyboard shortcuts.
-   *
-   * This was added for user testing in MakeCode and needs further discussion.
    */
   toggleShortcutDialog(): void {
     this.navigationController.shortcutDialog.toggle();
