@@ -611,26 +611,30 @@ export class Navigation {
     } else if (stationaryType === Blockly.ASTNode.types.WORKSPACE) {
       return this.moveBlockToWorkspace(movingBlock, stationaryNode);
     } else if (stationaryType === Blockly.ASTNode.types.BLOCK) {
+      // 1. Connect statement blocks to nextConnection
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
-      if (stationaryBlock.outputConnection) {
-        return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
-      }
       if (stationaryBlock.nextConnection && !movingBlock.outputConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
       }
 
+      // 2. Connect blocks to first compatible input, preferring non-connected.
+      //
+      // We currently don't take into account the connection checker here.
+      // We only consider this block's inputs so for nested value blocks this
+      // can feel like the visually first empty space is skipped. Maybe if we
+      // had post-insert movement with confirmation then we should pick in
+      // navigation order?
       const inputType = movingBlock.outputConnection
         ? Blockly.inputs.inputTypes.VALUE
         : Blockly.inputs.inputTypes.STATEMENT;
       const compatibleInputs = stationaryBlock.inputList.filter(
         (input) => input.type === inputType,
       );
-      // This currently doesn't take into account the connection checker.
       const input =
         compatibleInputs.find(
           (input) => input.connection && !input.connection.isConnected(),
-        ) ?? compatibleInputs[0];
-      let connection = input.connection;
+        ) ?? (compatibleInputs.length > 0 ? compatibleInputs[0] : undefined);
+      let connection = input?.connection;
       if (connection) {
         if (inputType === Blockly.inputs.inputTypes.STATEMENT) {
           while (connection.targetBlock()?.nextConnection) {
@@ -642,6 +646,11 @@ export class Navigation {
           movingBlock,
           connection as Blockly.RenderedConnection,
         );
+      }
+
+      // 3. Output connection. This will wrap around or displace.
+      if (stationaryBlock.outputConnection) {
+        return this.insertBlock(movingBlock, stationaryBlock.outputConnection);
       }
     }
     this.warn(`Unexpected case in tryToConnectBlock ${stationaryType}.`);
