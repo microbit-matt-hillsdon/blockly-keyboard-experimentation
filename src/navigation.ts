@@ -631,6 +631,7 @@ export class Navigation {
       );
       const input =
         compatibleInputs.find(
+          // Should this consider connections to shadow block as not connected?
           (input) => input.connection && !input.connection.isConnected(),
         ) ?? (compatibleInputs.length > 0 ? compatibleInputs[0] : undefined);
       let connection = input?.connection;
