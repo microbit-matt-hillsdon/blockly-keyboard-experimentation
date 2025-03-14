@@ -18,7 +18,6 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
-import {StatementInput} from 'node_modules/blockly/core/inputs';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
