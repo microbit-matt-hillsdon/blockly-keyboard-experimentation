@@ -611,7 +611,7 @@ export class Navigation {
     } else if (stationaryType === Blockly.ASTNode.types.WORKSPACE) {
       return this.moveBlockToWorkspace(movingBlock, stationaryNode);
     } else if (stationaryType === Blockly.ASTNode.types.BLOCK) {
-      // 1. Connect statement blocks to nextConnection
+      // 1. Connect statement blocks to next connection.
       const stationaryBlock = stationaryLoc as Blockly.BlockSvg;
       if (stationaryBlock.nextConnection && !movingBlock.outputConnection) {
         return this.insertBlock(movingBlock, stationaryBlock.nextConnection);
@@ -620,10 +620,9 @@ export class Navigation {
       // 2. Connect blocks to first compatible input, preferring non-connected.
       //
       // We currently don't take into account the connection checker here.
-      // We only consider this block's inputs so for nested value blocks this
-      // can feel like the visually first empty space is skipped. Maybe if we
-      // had post-insert movement with confirmation then we should pick in
-      // navigation order?
+      // Note this is not first in navigation order, which may be a
+      // desecendent's input. If we had movement mode on insert perhaps it
+      // should be?
       const inputType = movingBlock.outputConnection
         ? Blockly.inputs.inputTypes.VALUE
         : Blockly.inputs.inputTypes.STATEMENT;
