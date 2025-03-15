@@ -491,10 +491,11 @@ export class Navigation {
     workspace: Blockly.WorkspaceSvg,
     keepCursorPosition = false,
   ) {
-    workspace.hideChaff();
-    const reset = !!workspace.getToolbox();
-
-    this.resetFlyout(workspace, reset);
+    if (!Blockly.Gesture.inProgress()) {
+      workspace.hideChaff();
+      const reset = !!workspace.getToolbox();
+      this.resetFlyout(workspace, reset);
+    }
     this.setState(workspace, Constants.STATE.WORKSPACE);
     this.setCursorOnWorkspaceFocus(workspace, keepCursorPosition);
   }
@@ -513,10 +514,11 @@ export class Navigation {
     if (toFlyout) {
       return;
     }
-    workspace.hideChaff();
-    const reset = !!workspace.getToolbox();
-
-    this.resetFlyout(workspace, reset);
+    if (!Blockly.Gesture.inProgress()) {
+      workspace.hideChaff();
+      const reset = !!workspace.getToolbox();
+      this.resetFlyout(workspace, reset);
+    }
     switch (this.getState(workspace)) {
       case Constants.STATE.FLYOUT:
       case Constants.STATE.TOOLBOX:
