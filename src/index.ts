@@ -98,10 +98,10 @@ export class KeyboardNavigation {
         // Focus the workspace instead so we get the focus outline.
         this.navigationController.navigation.focusWorkspace(workspace);
       }
-      this.navigationController.onWorkspaceFocusChange(workspace, true);
+      this.navigationController.handleWorkspaceFocusChange(workspace, true);
     };
     this.blurListener = () => {
-      this.navigationController.onWorkspaceFocusChange(workspace, false);
+      this.navigationController.handleWorkspaceFocusChange(workspace, false);
     };
 
     workspace.getSvgGroup().addEventListener('focus', this.focusListener);
@@ -110,7 +110,11 @@ export class KeyboardNavigation {
     const flyoutElement = workspace.getFlyout()?.getWorkspace()?.getSvgGroup();
 
     this.toolboxFocusListener = () => {
-      this.navigationController.onToolboxFocusChange(workspace, true, false);
+      this.navigationController.handleToolboxFocusChange(
+        workspace,
+        true,
+        false,
+      );
     };
     this.toolboxBlurListener = (e: Event) => {
       const fe = e as FocusEvent;
@@ -119,7 +123,7 @@ export class KeyboardNavigation {
         fe.relatedTarget instanceof Element &&
         flyoutElement?.contains(fe.relatedTarget)
       );
-      this.navigationController.onToolboxFocusChange(
+      this.navigationController.handleToolboxFocusChange(
         workspace,
         false,
         toFlyout,
@@ -136,10 +140,10 @@ export class KeyboardNavigation {
     }
 
     this.flyoutFocusListener = () => {
-      this.navigationController.onFlyoutFocusChange(workspace, true);
+      this.navigationController.handleFlyoutFocusChange(workspace, true);
     };
     this.flyoutBlurListener = () => {
-      this.navigationController.onFlyoutFocusChange(workspace, false);
+      this.navigationController.handleFlyoutFocusChange(workspace, false);
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
     flyoutElement?.addEventListener('blur', this.flyoutBlurListener);

@@ -207,7 +207,7 @@ export class NavigationController {
    * @param workspace the workspace that now has toolbox input focus.
    * @param isFocused whether the environment has browser focus.
    */
-  onToolboxFocusChange(
+  handleToolboxFocusChange(
     workspace: WorkspaceSvg,
     isFocused: boolean,
     toFlyout: boolean,
@@ -222,7 +222,7 @@ export class NavigationController {
     }
   }
 
-  onFlyoutFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
+  handleFlyoutFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
     if (!workspace.getToolbox()) return;
     if (isFocused) {
       this.navigation.onFocusFlyout(workspace);
@@ -241,7 +241,7 @@ export class NavigationController {
    * @param workspace the workspace that now has workspace input focus.
    * @param isFocused whether the environment has browser focus.
    */
-  onWorkspaceFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
+  handleWorkspaceFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
     if (isFocused) {
       this.navigation.onFocusWorkspace(workspace, true);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.WORKSPACE;
