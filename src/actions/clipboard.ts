@@ -279,7 +279,6 @@ export class Clipboard {
     this.copyWorkspace = sourceBlock.workspace;
     const copied = !!this.copyData;
     if (copied && navigationState === Constants.STATE.FLYOUT) {
-      // TODO: when?
       workspace.hideChaff();
       this.navigation.focusWorkspace(workspace);
     }
