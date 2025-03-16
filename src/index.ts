@@ -96,7 +96,7 @@ export class KeyboardNavigation {
       if (e.currentTarget === this.workspace.getParentSvg()) {
         // This happens when focus returns from field editors.
         // Focus the workspace instead so we get the focus outline.
-        this.navigationController.navigation.focusWorkspace(workspace);
+        this.navigationController.focusWorkspace(workspace);
       }
       this.navigationController.handleWorkspaceFocusChange(workspace, true);
     };

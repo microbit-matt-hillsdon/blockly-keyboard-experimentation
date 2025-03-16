@@ -35,6 +35,7 @@ import {ExitAction} from './actions/exit';
 import {EnterAction} from './actions/enter';
 import {DisconnectAction} from './actions/disconnect';
 import {ActionMenu} from './actions/action_menu';
+import {PassiveFocus} from './passive_focus';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -57,7 +58,13 @@ enum NAVIGATION_FOCUS_MODE {
  * Class for registering shortcuts for keyboard navigation.
  */
 export class NavigationController {
-  navigation: Navigation = new Navigation();
+  private navigation: Navigation = new Navigation();
+
+  /**
+   * An object that renders a passive focus indicator at a specified location.
+   */
+  private passiveFocusIndicator: PassiveFocus = new PassiveFocus();
+
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
   /** Context menu and keyboard action for deletion. */
@@ -233,6 +240,10 @@ export class NavigationController {
     }
   }
 
+  focusWorkspace(workspace: WorkspaceSvg) {
+    this.navigation.focusWorkspace(workspace);
+  }
+
   /**
    * Sets whether the navigation controller has workspace focus. This will
    * enable keyboard navigation within the workspace. Additionally, the cursor
@@ -248,7 +259,7 @@ export class NavigationController {
 
       const cursor = workspace.getCursor();
       if (cursor) {
-        this.navigation.passiveFocusIndicator.hide();
+        this.passiveFocusIndicator.hide();
         cursor.draw();
       }
     } else {
@@ -258,7 +269,7 @@ export class NavigationController {
       if (cursor) {
         cursor.hide();
         if (cursor.getCurNode()) {
-          this.navigation.passiveFocusIndicator.show(cursor.getCurNode());
+          this.passiveFocusIndicator.show(cursor.getCurNode());
         }
       }
     }
@@ -423,5 +434,6 @@ export class NavigationController {
 
     this.removeShortcutHandlers();
     this.navigation.dispose();
+    this.passiveFocusIndicator.dispose();
   }
 }

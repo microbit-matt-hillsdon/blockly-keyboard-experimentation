@@ -64,11 +64,6 @@ export class Navigation {
   protected workspaces: Blockly.WorkspaceSvg[] = [];
 
   /**
-   * An object that renders a passive focus indicator at a specified location.
-   */
-  passiveFocusIndicator: PassiveFocus = new PassiveFocus();
-
-  /**
    * Constructor for keyboard navigation.
    */
   constructor() {
@@ -109,7 +104,6 @@ export class Navigation {
     if (workspaceIdx > -1) {
       this.workspaces.splice(workspaceIdx, 1);
     }
-    this.passiveFocusIndicator.dispose();
     workspace.removeChangeListener(this.wsChangeWrapper);
 
     if (flyout) {
