@@ -18,8 +18,6 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {PassiveFocus} from './passive_focus';
-import {toast} from './toast';
-import {formatMetaShortcut} from './shortcut_formatting';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
