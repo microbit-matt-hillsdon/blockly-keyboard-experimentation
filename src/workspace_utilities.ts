@@ -88,10 +88,10 @@ export function getToolboxElement(
 export function getFlyoutElement(
   workspace: Blockly.WorkspaceSvg,
 ): SVGElement | null {
-  const toolbox = workspace.getFlyout();
-  if (toolbox != null && toolbox instanceof Blockly.Flyout) {
+  const flyout = workspace.getFlyout();
+  if (flyout != null && flyout instanceof Blockly.Flyout) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ((toolbox as any).svgGroup_ as SVGElement) ?? null;
+    return ((flyout as any).svgGroup_ as SVGElement) ?? null;
   }
   return null;
 }
