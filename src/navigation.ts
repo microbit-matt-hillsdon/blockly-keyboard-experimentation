@@ -992,7 +992,7 @@ export class Navigation {
     if (workspace.getToolbox()) {
       this.focusToolbox(workspace);
     } else {
-      this.handleFocusFlyout(workspace);
+      this.focusFlyout(workspace);
     }
   }
 
