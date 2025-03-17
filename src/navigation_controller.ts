@@ -222,12 +222,16 @@ export class NavigationController {
     }
   }
 
-  handleFlyoutFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
+  handleFlyoutFocusChange(
+    workspace: WorkspaceSvg,
+    isFocused: boolean,
+    toToolbox: boolean,
+  ) {
     if (isFocused) {
       this.navigation.handleFocusFlyout(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.FLYOUT;
     } else {
-      this.navigation.handleBlurFlyout(workspace);
+      this.navigation.handleBlurFlyout(workspace, toToolbox);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
     }
   }

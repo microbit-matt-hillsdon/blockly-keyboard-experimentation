@@ -410,7 +410,10 @@ export class Navigation {
     this.moveToFirstFlyoutItem(workspace);
   }
 
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg) {
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, toToolbox: boolean) {
+    if (!toToolbox) {
+      this.resetFlyout(workspace, true);
+    }
     this.getFlyoutCursor(workspace)?.hide();
   }
 

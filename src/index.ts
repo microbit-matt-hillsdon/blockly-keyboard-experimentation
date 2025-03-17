@@ -40,7 +40,7 @@ export class KeyboardNavigation {
   private flyoutFocusListener: () => void;
 
   /** Event handler run when the flyout loses focus. */
-  private flyoutBlurListener: () => void;
+  private flyoutBlurListener: (e: Event) => void;
 
   /** Keyboard navigation controller instance for the workspace. */
   private navigationController: NavigationController;
@@ -93,14 +93,9 @@ export class KeyboardNavigation {
     // We add a focus listener below so use -1 so it doesn't become focusable.
     workspace.getParentSvg().setAttribute('tabindex', '-1');
 
-    // Flyout but no toolbox? Move it for better tab order.
-    if (!workspace.getToolbox() && workspace.getFlyout()) {
-      const element = getFlyoutElement(workspace);
-      element?.parentElement?.insertBefore(
-        element,
-        element.parentElement.firstChild,
-      );
-    }
+    // Move the flyout for logical tab order.
+    const element = getFlyoutElement(workspace);
+    element?.parentElement?.insertBefore(element, workspace.getParentSvg());
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
@@ -143,10 +138,20 @@ export class KeyboardNavigation {
     toolboxElement?.addEventListener('blur', this.toolboxBlurListener);
 
     this.flyoutFocusListener = () => {
-      this.navigationController.handleFlyoutFocusChange(workspace, true);
+      this.navigationController.handleFlyoutFocusChange(workspace, true, false);
     };
-    this.flyoutBlurListener = () => {
-      this.navigationController.handleFlyoutFocusChange(workspace, false);
+    this.flyoutBlurListener = (e: Event) => {
+      const fe = e as FocusEvent;
+      const toToolbox = !!(
+        fe.relatedTarget &&
+        fe.relatedTarget instanceof Element &&
+        toolboxElement?.contains(fe.relatedTarget)
+      );
+      this.navigationController.handleFlyoutFocusChange(
+        workspace,
+        false,
+        toToolbox,
+      );
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
     flyoutElement?.addEventListener('blur', this.flyoutBlurListener);
