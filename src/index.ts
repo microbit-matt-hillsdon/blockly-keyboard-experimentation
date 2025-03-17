@@ -93,6 +93,15 @@ export class KeyboardNavigation {
     // We add a focus listener below so use -1 so it doesn't become focusable.
     workspace.getParentSvg().setAttribute('tabindex', '-1');
 
+    // Flyout but no toolbox? Move it for better tab order.
+    if (!workspace.getToolbox() && workspace.getFlyout()) {
+      const element = getFlyoutElement(workspace);
+      element?.parentElement?.insertBefore(
+        element,
+        element.parentElement.firstChild,
+      );
+    }
+
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
         // This happens when focus returns from field editors.

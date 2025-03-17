@@ -15,7 +15,6 @@ import './toolbox_monkey_patch';
 
 import * as Blockly from 'blockly/core';
 import {
-  ASTNode,
   ShortcutRegistry,
   Toolbox,
   utils as BlocklyUtils,
@@ -27,7 +26,6 @@ import {Clipboard} from './actions/clipboard';
 import {DeleteAction} from './actions/delete';
 import {EditAction} from './actions/edit';
 import {InsertAction} from './actions/insert';
-import {LineCursor} from './line_cursor';
 import {Navigation} from './navigation';
 import {ShortcutDialog} from './shortcut_dialog';
 import {WorkspaceMovement} from './actions/ws_movement';
@@ -36,12 +34,8 @@ import {ExitAction} from './actions/exit';
 import {EnterAction} from './actions/enter';
 import {DisconnectAction} from './actions/disconnect';
 import {ActionMenu} from './actions/action_menu';
-import {PassiveFocus} from './passive_focus';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
-const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
-  ShortcutRegistry.registry,
-);
 
 /** Represents the current focus mode of the navigation controller. */
 enum NAVIGATION_FOCUS_MODE {
@@ -60,11 +54,6 @@ enum NAVIGATION_FOCUS_MODE {
  */
 export class NavigationController {
   private navigation: Navigation = new Navigation();
-
-  /**
-   * An object that renders a passive focus indicator at a specified location.
-   */
-  private passiveFocusIndicator: PassiveFocus = new PassiveFocus();
 
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
@@ -238,7 +227,7 @@ export class NavigationController {
       this.navigation.handleFocusFlyout(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.FLYOUT;
     } else {
-      // TODO: do we need to e.g. close it?
+      this.navigation.handleBlurFlyout(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
     }
   }
@@ -259,22 +248,9 @@ export class NavigationController {
     if (isFocused) {
       this.navigation.handleFocusWorkspace(workspace, true);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.WORKSPACE;
-
-      const cursor = workspace.getCursor();
-      if (cursor) {
-        this.passiveFocusIndicator.hide();
-        cursor.draw();
-      }
     } else {
+      this.navigation.handleBlurWorkspace(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
-
-      const cursor = workspace.getCursor();
-      if (cursor) {
-        cursor.hide();
-        if (cursor.getCurNode()) {
-          this.passiveFocusIndicator.show(cursor.getCurNode());
-        }
-      }
     }
   }
 
@@ -439,6 +415,5 @@ export class NavigationController {
 
     this.removeShortcutHandlers();
     this.navigation.dispose();
-    this.passiveFocusIndicator.dispose();
   }
 }

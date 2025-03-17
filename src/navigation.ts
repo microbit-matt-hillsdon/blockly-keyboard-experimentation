@@ -22,6 +22,7 @@ import {
   getToolboxElement,
   getWorkspaceElement,
 } from './workspace_utilities';
+import {PassiveFocus} from './passive_focus';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -68,6 +69,11 @@ export class Navigation {
   protected workspaces: Blockly.WorkspaceSvg[] = [];
 
   /**
+   * An object that renders a passive focus indicator at a specified location.
+   */
+  private passiveFocusIndicator: PassiveFocus = new PassiveFocus();
+
+  /**
    * Constructor for keyboard navigation.
    */
   constructor() {
@@ -108,6 +114,7 @@ export class Navigation {
     if (workspaceIdx > -1) {
       this.workspaces.splice(workspaceIdx, 1);
     }
+    this.passiveFocusIndicator.dispose();
     workspace.removeChangeListener(this.wsChangeWrapper);
 
     if (flyout) {
@@ -399,7 +406,12 @@ export class Navigation {
    */
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
+    this.getFlyoutCursor(workspace)?.draw();
     this.moveToFirstFlyoutItem(workspace);
+  }
+
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg) {
+    this.getFlyoutCursor(workspace)?.hide();
   }
 
   moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
@@ -438,6 +450,22 @@ export class Navigation {
     }
     this.setState(workspace, Constants.STATE.WORKSPACE);
     this.setCursorOnWorkspaceFocus(workspace, keepCursorPosition);
+
+    const cursor = workspace.getCursor();
+    if (cursor) {
+      this.passiveFocusIndicator.hide();
+      cursor.draw();
+    }
+  }
+
+  handleBlurWorkspace(workspace: Blockly.WorkspaceSvg) {
+    const cursor = workspace.getCursor();
+    if (cursor) {
+      cursor.hide();
+      if (cursor.getCurNode()) {
+        this.passiveFocusIndicator.show(cursor.getCurNode());
+      }
+    }
   }
 
   /**
