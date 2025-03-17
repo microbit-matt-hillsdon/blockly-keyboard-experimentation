@@ -364,7 +364,7 @@ export class Navigation {
    *
    * @param workspace The workspace to get the toolbox on.
    */
-  onFocusToolbox(workspace: Blockly.WorkspaceSvg) {
+  handleFocusToolbox(workspace: Blockly.WorkspaceSvg) {
     const toolbox = workspace.getToolbox();
     if (!toolbox) {
       return;
@@ -402,7 +402,7 @@ export class Navigation {
    *
    * @param workspace The workspace the flyout is on.
    */
-  onFocusFlyout(workspace: Blockly.WorkspaceSvg) {
+  handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.moveToFirstFlyoutItem(workspace);
   }
@@ -992,7 +992,7 @@ export class Navigation {
     if (workspace.getToolbox()) {
       this.focusToolbox(workspace);
     } else {
-      this.onFocusFlyout(workspace);
+      this.handleFocusFlyout(workspace);
     }
   }
 

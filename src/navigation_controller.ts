@@ -225,7 +225,7 @@ export class NavigationController {
   ) {
     if (!workspace.getToolbox()) return;
     if (isFocused) {
-      this.navigation.onFocusToolbox(workspace);
+      this.navigation.handleFocusToolbox(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.TOOLBOX;
     } else {
       this.navigation.handleToolboxBlur(workspace, toFlyout);
@@ -236,7 +236,7 @@ export class NavigationController {
   handleFlyoutFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
     if (!workspace.getToolbox()) return;
     if (isFocused) {
-      this.navigation.onFocusFlyout(workspace);
+      this.navigation.handleFocusFlyout(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.FLYOUT;
     } else {
       // TODO: do we need to e.g. close it?
