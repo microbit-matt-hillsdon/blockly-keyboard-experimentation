@@ -111,11 +111,11 @@ export class KeyboardNavigation {
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
-        // This happens when focus returns from field editors.
-        // Focus the workspace instead so we get the focus outline.
+        e.preventDefault();
         this.navigationController.focusWorkspace(workspace);
+      } else {
+        this.navigationController.handleFocusWorkspace(workspace);
       }
-      this.navigationController.handleFocusWorkspace(workspace);
     };
     this.blurListener = () => {
       this.navigationController.handleBlurWorkspace(workspace);

@@ -382,17 +382,14 @@ export class Navigation {
    * @param workspace The workspace to focus on.
    * @param keepCursorPosition Whether to retain the cursor's previous position.
    */
-  handleFocusWorkspace(
-    workspace: Blockly.WorkspaceSvg,
-    keepCursorPosition = false,
-  ) {
+  handleFocusWorkspace(workspace: Blockly.WorkspaceSvg) {
     if (!Blockly.Gesture.inProgress()) {
       workspace.hideChaff();
       const reset = !!workspace.getToolbox();
       this.resetFlyout(workspace, reset);
     }
     this.setState(workspace, Constants.STATE.WORKSPACE);
-    this.setCursorOnWorkspaceFocus(workspace, keepCursorPosition);
+    this.setCursorOnWorkspaceFocus(workspace, true);
 
     const cursor = workspace.getCursor();
     if (cursor) {
