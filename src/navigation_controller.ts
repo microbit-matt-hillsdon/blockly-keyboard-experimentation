@@ -228,7 +228,7 @@ export class NavigationController {
       this.navigation.onFocusToolbox(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.TOOLBOX;
     } else {
-      this.navigation.onToolboxBlur(workspace, toFlyout);
+      this.navigation.handleToolboxBlur(workspace, toFlyout);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
     }
   }
@@ -258,7 +258,7 @@ export class NavigationController {
    */
   handleWorkspaceFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
     if (isFocused) {
-      this.navigation.onFocusWorkspace(workspace, true);
+      this.navigation.handleFocusWorkspace(workspace, true);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.WORKSPACE;
 
       const cursor = workspace.getCursor();

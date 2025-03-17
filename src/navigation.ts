@@ -17,7 +17,6 @@ import {
   registrationType as cursorRegistrationType,
   FlyoutCursor,
 } from './flyout_cursor';
-import {PassiveFocus} from './passive_focus';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -481,7 +480,7 @@ export class Navigation {
    * @param workspace The workspace to focus on.
    * @param keepCursorPosition Whether to retain the cursor's previous position.
    */
-  onFocusWorkspace(
+  handleFocusWorkspace(
     workspace: Blockly.WorkspaceSvg,
     keepCursorPosition = false,
   ) {
@@ -504,7 +503,7 @@ export class Navigation {
    *
    * @param workspace The workspace containing the toolbox.
    */
-  onToolboxBlur(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
+  handleToolboxBlur(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
     if (toFlyout) {
       return;
     }
