@@ -94,8 +94,15 @@ export class KeyboardNavigation {
     workspace.getParentSvg().setAttribute('tabindex', '-1');
 
     // Move the flyout for logical tab order.
-    const element = getFlyoutElement(workspace);
-    element?.parentElement?.insertBefore(element, workspace.getParentSvg());
+    const flyoutElement = getFlyoutElement(workspace);
+    flyoutElement?.parentElement?.insertBefore(
+      flyoutElement,
+      workspace.getParentSvg(),
+    );
+    // Allow tab to the flyout only when there's no toolbox.
+    if (workspace.getToolbox() && flyoutElement) {
+      flyoutElement.tabIndex = -1;
+    }
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
@@ -103,55 +110,40 @@ export class KeyboardNavigation {
         // Focus the workspace instead so we get the focus outline.
         this.navigationController.focusWorkspace(workspace);
       }
-      this.navigationController.handleWorkspaceFocusChange(workspace, true);
+      this.navigationController.handleFocusWorkspace(workspace);
     };
     this.blurListener = () => {
-      this.navigationController.handleWorkspaceFocusChange(workspace, false);
+      this.navigationController.handleBlurWorkspace(workspace);
     };
 
     workspace.getSvgGroup().addEventListener('focus', this.focusListener);
     workspace.getSvgGroup().addEventListener('blur', this.blurListener);
 
-    const flyoutElement = getFlyoutElement(workspace);
     const toolboxElement = getToolboxElement(workspace);
     this.toolboxFocusListener = () => {
-      this.navigationController.handleToolboxFocusChange(
-        workspace,
-        true,
-        false,
-      );
+      this.navigationController.handleFocusToolbox(workspace);
     };
     this.toolboxBlurListener = (e: Event) => {
       const fe = e as FocusEvent;
       const toFlyout = !!(
-        fe.relatedTarget &&
         fe.relatedTarget instanceof Element &&
         flyoutElement?.contains(fe.relatedTarget)
       );
-      this.navigationController.handleToolboxFocusChange(
-        workspace,
-        false,
-        toFlyout,
-      );
+      this.navigationController.handleBlurToolbox(workspace, toFlyout);
     };
     toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
     toolboxElement?.addEventListener('blur', this.toolboxBlurListener);
 
     this.flyoutFocusListener = () => {
-      this.navigationController.handleFlyoutFocusChange(workspace, true, false);
+      this.navigationController.handleFocusFlyout(workspace);
     };
     this.flyoutBlurListener = (e: Event) => {
       const fe = e as FocusEvent;
       const toToolbox = !!(
-        fe.relatedTarget &&
         fe.relatedTarget instanceof Element &&
         toolboxElement?.contains(fe.relatedTarget)
       );
-      this.navigationController.handleFlyoutFocusChange(
-        workspace,
-        false,
-        toToolbox,
-      );
+      this.navigationController.handleBlurFlyout(workspace, toToolbox);
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
     flyoutElement?.addEventListener('blur', this.flyoutBlurListener);

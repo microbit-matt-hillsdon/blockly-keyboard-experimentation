@@ -360,79 +360,8 @@ export class Navigation {
     this.focusFlyout(mainWorkspace);
   }
 
-  focusToolbox(workspace: Blockly.WorkspaceSvg) {
-    getToolboxElement(workspace)?.focus();
-  }
-
-  /**
-   * Sets the navigation state to toolbox and selects the first category in the
-   * toolbox. No-op if a toolbox does not exist on the given workspace.
-   *
-   * @param workspace The workspace to get the toolbox on.
-   */
-  handleFocusToolbox(workspace: Blockly.WorkspaceSvg) {
-    const toolbox = workspace.getToolbox();
-    if (!toolbox) {
-      return;
-    }
-    this.setState(workspace, Constants.STATE.TOOLBOX);
-    this.resetFlyout(workspace, false /* shouldHide */);
-
-    if (!toolbox.getSelectedItem()) {
-      // Find the first item that is selectable.
-      const toolboxItems = (toolbox as any).getToolboxItems();
-      for (let i = 0, toolboxItem; (toolboxItem = toolboxItems[i]); i++) {
-        if (toolboxItem.isSelectable()) {
-          toolbox.selectItemByPosition(i);
-          break;
-        }
-      }
-    }
-  }
-
   focusWorkspace(workspace: Blockly.WorkspaceSvg) {
     getWorkspaceElement(workspace).focus();
-  }
-
-  focusFlyout(workspace: Blockly.WorkspaceSvg) {
-    getFlyoutElement(workspace)?.focus();
-  }
-
-  /**
-   * Sets the navigation state to flyout and moves the cursor to the first
-   * block or button in the flyout.
-   *
-   * @param workspace The workspace the flyout is on.
-   */
-  handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
-    this.setState(workspace, Constants.STATE.FLYOUT);
-    this.getFlyoutCursor(workspace)?.draw();
-    this.moveToFirstFlyoutItem(workspace);
-  }
-
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, toToolbox: boolean) {
-    if (!toToolbox) {
-      this.resetFlyout(workspace, true);
-    }
-    this.getFlyoutCursor(workspace)?.hide();
-  }
-
-  moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
-    const flyout = workspace.getFlyout();
-    if (!flyout) return;
-    const flyoutCursor = this.getFlyoutCursor(workspace);
-    if (!flyoutCursor) return;
-
-    const flyoutContents = flyout.getContents();
-    const firstFlyoutItem = flyoutContents[0];
-    if (!firstFlyoutItem) return;
-    if (firstFlyoutItem.button) {
-      const astNode = Blockly.ASTNode.createButtonNode(firstFlyoutItem.button);
-      flyoutCursor.setCurNode(astNode!);
-    } else if (firstFlyoutItem.block) {
-      const astNode = Blockly.ASTNode.createStackNode(firstFlyoutItem.block);
-      flyoutCursor.setCurNode(astNode!);
-    }
   }
 
   /**
@@ -471,6 +400,36 @@ export class Navigation {
     }
   }
 
+  focusToolbox(workspace: Blockly.WorkspaceSvg) {
+    getToolboxElement(workspace)?.focus();
+  }
+
+  /**
+   * Sets the navigation state to toolbox and selects the first category in the
+   * toolbox. No-op if a toolbox does not exist on the given workspace.
+   *
+   * @param workspace The workspace to get the toolbox on.
+   */
+  handleFocusToolbox(workspace: Blockly.WorkspaceSvg) {
+    const toolbox = workspace.getToolbox();
+    if (!toolbox) {
+      return;
+    }
+    this.setState(workspace, Constants.STATE.TOOLBOX);
+    this.resetFlyout(workspace, false /* shouldHide */);
+
+    if (!toolbox.getSelectedItem()) {
+      // Find the first item that is selectable.
+      const toolboxItems = (toolbox as any).getToolboxItems();
+      for (let i = 0, toolboxItem; (toolboxItem = toolboxItems[i]); i++) {
+        if (toolboxItem.isSelectable()) {
+          toolbox.selectItemByPosition(i);
+          break;
+        }
+      }
+    }
+  }
+
   /**
    * Blurs (de-focuses) the workspace's toolbox, and hides the flyout if it's
    * currently visible.
@@ -481,7 +440,7 @@ export class Navigation {
    *
    * @param workspace The workspace containing the toolbox.
    */
-  handleToolboxBlur(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
+  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
     if (toFlyout) {
       return;
     }
@@ -496,6 +455,60 @@ export class Navigation {
         // Clear state since neither the flyout nor toolbox are focused anymore.
         this.setState(workspace, Constants.STATE.NOWHERE);
         break;
+    }
+  }
+
+  focusFlyout(workspace: Blockly.WorkspaceSvg) {
+    getFlyoutElement(workspace)?.focus();
+  }
+
+  /**
+   * Sets the navigation state to flyout and moves the cursor to the first
+   * block or button in the flyout.
+   *
+   * @param workspace The workspace the flyout is on.
+   */
+  handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
+    this.setState(workspace, Constants.STATE.FLYOUT);
+    this.getFlyoutCursor(workspace)?.draw();
+    this.moveToFirstFlyoutItem(workspace);
+
+    // Prevent shift-tab to the toolbox while the flyout has focus.
+    const toolboxElement = getToolboxElement(workspace);
+    if (toolboxElement) {
+      toolboxElement.tabIndex = -1;
+    }
+  }
+
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, toToolbox: boolean) {
+    if (!toToolbox) {
+      workspace.hideChaff();
+      const reset = !!workspace.getToolbox();
+      this.resetFlyout(workspace, reset);
+    }
+    this.getFlyoutCursor(workspace)?.hide();
+
+    const toolboxElement = getToolboxElement(workspace);
+    if (toolboxElement) {
+      toolboxElement.tabIndex = 0;
+    }
+  }
+
+  moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
+    const flyout = workspace.getFlyout();
+    if (!flyout) return;
+    const flyoutCursor = this.getFlyoutCursor(workspace);
+    if (!flyoutCursor) return;
+
+    const flyoutContents = flyout.getContents();
+    const firstFlyoutItem = flyoutContents[0];
+    if (!firstFlyoutItem) return;
+    if (firstFlyoutItem.button) {
+      const astNode = Blockly.ASTNode.createButtonNode(firstFlyoutItem.button);
+      flyoutCursor.setCurNode(astNode!);
+    } else if (firstFlyoutItem.block) {
+      const astNode = Blockly.ASTNode.createStackNode(firstFlyoutItem.block);
+      flyoutCursor.setCurNode(astNode!);
     }
   }
 
