@@ -389,10 +389,11 @@ export class Navigation {
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
-    // We don't really focus the flyout. Instead we focus the toolbox
-    // and switch to flyout state.
-    this.focusToolbox(workspace);
-    this.handleFocusFlyout(workspace);
+    (
+      workspace.getFlyout()?.getWorkspace()?.getSvgGroup() as
+        | SVGElement
+        | undefined
+    )?.focus();
   }
 
   /**
@@ -454,7 +455,10 @@ export class Navigation {
    *
    * @param workspace The workspace containing the toolbox.
    */
-  handleToolboxBlur(workspace: Blockly.WorkspaceSvg) {
+  handleToolboxBlur(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
+    if (toFlyout) {
+      return;
+    }
     if (!Blockly.Gesture.inProgress()) {
       workspace.hideChaff();
       const reset = !!workspace.getToolbox();

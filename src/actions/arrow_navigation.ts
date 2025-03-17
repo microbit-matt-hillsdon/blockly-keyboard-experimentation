@@ -74,8 +74,7 @@ export class ArrowNavigation {
                   ? toolbox.onShortcut(shortcut)
                   : false;
               if (!isHandled) {
-                // Toolbox already has focus, just update state.
-                this.navigation.handleFocusFlyout(workspace);
+                this.navigation.focusFlyout(workspace);
               }
               return true;
             default:
@@ -101,8 +100,7 @@ export class ArrowNavigation {
               }
               return isHandled;
             case Constants.STATE.FLYOUT:
-              // Toolbox already has focus so just update state.
-              this.navigation.handleFocusToolbox(workspace);
+              this.navigation.focusToolbox(workspace);
               return true;
             case Constants.STATE.TOOLBOX:
               return toolbox && typeof toolbox.onShortcut === 'function'

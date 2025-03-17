@@ -218,13 +218,17 @@ export class NavigationController {
    * @param workspace the workspace that now has toolbox input focus.
    * @param isFocused whether the environment has browser focus.
    */
-  handleToolboxFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
+  handleToolboxFocusChange(
+    workspace: WorkspaceSvg,
+    isFocused: boolean,
+    toFlyout: boolean,
+  ) {
     if (!workspace.getToolbox()) return;
     if (isFocused) {
       this.navigation.handleFocusToolbox(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.TOOLBOX;
     } else {
-      this.navigation.handleToolboxBlur(workspace);
+      this.navigation.handleToolboxBlur(workspace, toFlyout);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.NONE;
     }
   }
