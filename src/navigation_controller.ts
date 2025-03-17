@@ -26,7 +26,7 @@ import {Clipboard} from './actions/clipboard';
 import {DeleteAction} from './actions/delete';
 import {EditAction} from './actions/edit';
 import {InsertAction} from './actions/insert';
-import {Navigation} from './navigation';
+import {BlurRelatedTarget, Navigation} from './navigation';
 import {ShortcutDialog} from './shortcut_dialog';
 import {WorkspaceMovement} from './actions/ws_movement';
 import {ArrowNavigation} from './actions/arrow_navigation';
@@ -210,8 +210,11 @@ export class NavigationController {
     this.navigation.handleFocusToolbox(workspace);
   }
 
-  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
-    this.navigation.handleBlurToolbox(workspace, toFlyout);
+  handleBlurToolbox(
+    workspace: Blockly.WorkspaceSvg,
+    relatedTarget: BlurRelatedTarget,
+  ) {
+    this.navigation.handleBlurToolbox(workspace, relatedTarget);
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
@@ -222,8 +225,11 @@ export class NavigationController {
     this.navigation.handleFocusFlyout(workspace);
   }
 
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, toToolbox: boolean) {
-    this.navigation.handleBlurFlyout(workspace, toToolbox);
+  handleBlurFlyout(
+    workspace: Blockly.WorkspaceSvg,
+    relatedTarget: BlurRelatedTarget,
+  ) {
+    this.navigation.handleBlurFlyout(workspace, relatedTarget);
   }
 
   /**

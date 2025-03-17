@@ -24,6 +24,17 @@ import {
 } from './workspace_utilities';
 import {PassiveFocus} from './passive_focus';
 
+export enum BlurRelatedTarget {
+  TOOLBOX,
+  FLYOUT,
+  /**
+   * Used when there's no related node.  We see this as a result of alert()
+   * calls creating variables and need to avoid closing the flyout in this case.
+   */
+  NOWHERE,
+  OTHER,
+}
+
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
  */
@@ -440,11 +451,14 @@ export class Navigation {
    *
    * @param workspace The workspace containing the toolbox.
    */
-  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, toFlyout: boolean) {
-    if (toFlyout) {
-      return;
-    }
-    if (!Blockly.Gesture.inProgress()) {
+  handleBlurToolbox(
+    workspace: Blockly.WorkspaceSvg,
+    relatedTarget: BlurRelatedTarget,
+  ) {
+    if (
+      !Blockly.Gesture.inProgress() &&
+      relatedTarget === BlurRelatedTarget.OTHER
+    ) {
       workspace.hideChaff();
       const reset = !!workspace.getToolbox();
       this.resetFlyout(workspace, reset);
@@ -480,8 +494,11 @@ export class Navigation {
     }
   }
 
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, toToolbox: boolean) {
-    if (!toToolbox) {
+  handleBlurFlyout(
+    workspace: Blockly.WorkspaceSvg,
+    relatedTarget: BlurRelatedTarget,
+  ) {
+    if (relatedTarget === BlurRelatedTarget.OTHER) {
       workspace.hideChaff();
       const reset = !!workspace.getToolbox();
       this.resetFlyout(workspace, reset);

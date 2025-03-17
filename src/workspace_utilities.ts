@@ -5,6 +5,7 @@
  */
 
 import * as Blockly from 'blockly/core';
+import {BlurRelatedTarget} from './navigation';
 
 /**
  * Scrolls the provided bounds into view.
@@ -94,4 +95,19 @@ export function getFlyoutElement(
     return ((flyout as any).svgGroup_ as SVGElement) ?? null;
   }
   return null;
+}
+
+export function classifyBlurRelatedTarget(
+  event: Event,
+  container: Element | null,
+  containerValue: BlurRelatedTarget,
+) {
+  const fe = event as FocusEvent;
+  if (!fe.relatedTarget) {
+    return BlurRelatedTarget.NOWHERE;
+  }
+  if (container?.contains(fe.relatedTarget as Node)) {
+    return containerValue;
+  }
+  return BlurRelatedTarget.OTHER;
 }

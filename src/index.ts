@@ -7,7 +7,12 @@
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {CursorOptions, LineCursor} from './line_cursor';
-import {getFlyoutElement, getToolboxElement} from './workspace_utilities';
+import {
+  classifyBlurRelatedTarget,
+  getFlyoutElement,
+  getToolboxElement,
+} from './workspace_utilities';
+import {BlurRelatedTarget} from './navigation';
 
 /** Options object for KeyboardNavigation instances. */
 export type NavigationOptions = {
@@ -124,12 +129,10 @@ export class KeyboardNavigation {
       this.navigationController.handleFocusToolbox(workspace);
     };
     this.toolboxBlurListener = (e: Event) => {
-      const fe = e as FocusEvent;
-      const toFlyout = !!(
-        fe.relatedTarget instanceof Element &&
-        flyoutElement?.contains(fe.relatedTarget)
+      this.navigationController.handleBlurToolbox(
+        workspace,
+        classifyBlurRelatedTarget(e, flyoutElement, BlurRelatedTarget.FLYOUT),
       );
-      this.navigationController.handleBlurToolbox(workspace, toFlyout);
     };
     toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
     toolboxElement?.addEventListener('blur', this.toolboxBlurListener);
@@ -138,12 +141,10 @@ export class KeyboardNavigation {
       this.navigationController.handleFocusFlyout(workspace);
     };
     this.flyoutBlurListener = (e: Event) => {
-      const fe = e as FocusEvent;
-      const toToolbox = !!(
-        fe.relatedTarget instanceof Element &&
-        toolboxElement?.contains(fe.relatedTarget)
+      this.navigationController.handleBlurFlyout(
+        workspace,
+        classifyBlurRelatedTarget(e, flyoutElement, BlurRelatedTarget.TOOLBOX),
       );
-      this.navigationController.handleBlurFlyout(workspace, toToolbox);
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
     flyoutElement?.addEventListener('blur', this.flyoutBlurListener);
