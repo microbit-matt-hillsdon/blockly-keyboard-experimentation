@@ -68,3 +68,30 @@ export function scrollBoundsIntoView(
   deltaY *= scale;
   workspace.scroll(workspace.scrollX + deltaX, workspace.scrollY + deltaY);
 }
+
+export function getWorkspaceElement(workspace: Blockly.Workspace): SVGElement {
+  return (workspace as Blockly.WorkspaceSvg).getSvgGroup() as SVGElement;
+}
+
+export function getToolboxElement(
+  workspace: Blockly.WorkspaceSvg,
+): HTMLElement | null {
+  const toolbox = workspace.getToolbox();
+  if (toolbox instanceof Blockly.Toolbox) {
+    return toolbox.HtmlDiv?.querySelector(
+      '.blocklyToolboxContents',
+    ) as HTMLElement | null;
+  }
+  return null;
+}
+
+export function getFlyoutElement(
+  workspace: Blockly.WorkspaceSvg,
+): SVGElement | null {
+  const toolbox = workspace.getFlyout();
+  if (toolbox != null && toolbox instanceof Blockly.Flyout) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ((toolbox as any).svgGroup_ as SVGElement) ?? null;
+  }
+  return null;
+}

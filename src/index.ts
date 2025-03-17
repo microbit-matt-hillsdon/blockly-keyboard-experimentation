@@ -7,6 +7,7 @@
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {CursorOptions, LineCursor} from './line_cursor';
+import {getFlyoutElement, getToolboxElement} from './workspace_utilities';
 
 /** Options object for KeyboardNavigation instances. */
 export type NavigationOptions = {
@@ -107,8 +108,8 @@ export class KeyboardNavigation {
     workspace.getSvgGroup().addEventListener('focus', this.focusListener);
     workspace.getSvgGroup().addEventListener('blur', this.blurListener);
 
-    const flyoutElement = workspace.getFlyout()?.getWorkspace()?.getSvgGroup();
-
+    const flyoutElement = getFlyoutElement(workspace);
+    const toolboxElement = getToolboxElement(workspace);
     this.toolboxFocusListener = () => {
       this.navigationController.handleToolboxFocusChange(
         workspace,
@@ -129,15 +130,8 @@ export class KeyboardNavigation {
         toFlyout,
       );
     };
-
-    const toolbox = workspace.getToolbox();
-    if (toolbox != null && toolbox instanceof Blockly.Toolbox) {
-      const contentsDiv = toolbox.HtmlDiv?.querySelector(
-        '.blocklyToolboxContents',
-      );
-      contentsDiv?.addEventListener('focus', this.toolboxFocusListener);
-      contentsDiv?.addEventListener('blur', this.toolboxBlurListener);
-    }
+    toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
+    toolboxElement?.addEventListener('blur', this.toolboxBlurListener);
 
     this.flyoutFocusListener = () => {
       this.navigationController.handleFlyoutFocusChange(workspace, true);
@@ -172,19 +166,11 @@ export class KeyboardNavigation {
       .getSvgGroup()
       .removeEventListener('focus', this.focusListener);
 
-    const toolbox = this.workspace.getToolbox();
-    if (toolbox != null && toolbox instanceof Blockly.Toolbox) {
-      const contentsDiv = toolbox.HtmlDiv?.querySelector(
-        '.blocklyToolboxContents',
-      );
-      contentsDiv?.removeEventListener('focus', this.toolboxFocusListener);
-      contentsDiv?.removeEventListener('blur', this.toolboxBlurListener);
-    }
+    const toolboxElement = getToolboxElement(this.workspace);
+    toolboxElement?.removeEventListener('focus', this.toolboxFocusListener);
+    toolboxElement?.removeEventListener('blur', this.toolboxBlurListener);
 
-    const flyoutElement = this.workspace
-      .getFlyout()
-      ?.getWorkspace()
-      ?.getSvgGroup();
+    const flyoutElement = getFlyoutElement(this.workspace);
     flyoutElement?.removeEventListener('focus', this.flyoutFocusListener);
     flyoutElement?.removeEventListener('blur', this.flyoutBlurListener);
 

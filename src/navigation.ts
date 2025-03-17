@@ -17,6 +17,11 @@ import {
   registrationType as cursorRegistrationType,
   FlyoutCursor,
 } from './flyout_cursor';
+import {
+  getFlyoutElement,
+  getToolboxElement,
+  getWorkspaceElement,
+} from './workspace_utilities';
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -345,17 +350,11 @@ export class Navigation {
     this.getFlyoutCursor(mainWorkspace)!.setCurNode(
       Blockly.ASTNode.createStackNode(block)!,
     );
-    this.setState(mainWorkspace, Constants.STATE.FLYOUT);
+    this.focusFlyout(mainWorkspace);
   }
 
   focusToolbox(workspace: Blockly.WorkspaceSvg) {
-    const toolbox = workspace.getToolbox();
-    if (toolbox != null && toolbox instanceof Blockly.Toolbox) {
-      const contentsDiv = toolbox.HtmlDiv?.querySelector(
-        '.blocklyToolboxContents',
-      );
-      (contentsDiv as HTMLElement | null)?.focus();
-    }
+    getToolboxElement(workspace)?.focus();
   }
 
   /**
@@ -385,15 +384,11 @@ export class Navigation {
   }
 
   focusWorkspace(workspace: Blockly.WorkspaceSvg) {
-    (workspace.getSvgGroup() as SVGElement)?.focus();
+    getWorkspaceElement(workspace).focus();
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
-    (
-      workspace.getFlyout()?.getWorkspace()?.getSvgGroup() as
-        | SVGElement
-        | undefined
-    )?.focus();
+    getFlyoutElement(workspace)?.focus();
   }
 
   /**

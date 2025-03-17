@@ -234,7 +234,6 @@ export class NavigationController {
   }
 
   handleFlyoutFocusChange(workspace: WorkspaceSvg, isFocused: boolean) {
-    if (!workspace.getToolbox()) return;
     if (isFocused) {
       this.navigation.handleFocusFlyout(workspace);
       this.navigationFocus = NAVIGATION_FOCUS_MODE.FLYOUT;
