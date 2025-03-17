@@ -189,15 +189,6 @@ export class Navigation {
           this.handleBlockMutation(workspace, e as Blockly.Events.BlockChange);
         }
         break;
-      case Blockly.Events.CLICK:
-        this.handleWorkspaceClick(workspace, e as Blockly.Events.Click);
-        break;
-      case Blockly.Events.TOOLBOX_ITEM_SELECT:
-        this.handleToolboxCategoryClick(
-          workspace,
-          e as Blockly.Events.ToolboxItemSelect,
-        );
-        break;
       case Blockly.Events.BLOCK_CREATE:
         this.handleBlockCreate(workspace, e);
     }
@@ -295,45 +286,6 @@ export class Navigation {
       if (block && block.id === mutatedBlockId) {
         cursor.setCurNode(Blockly.ASTNode.createBlockNode(block)!);
       }
-    }
-  }
-
-  /**
-   * Moves the cursor to the workspace when a user clicks on the workspace.
-   *
-   * @param workspace The workspace the cursor belongs to.
-   * @param e The Blockly event to process.
-   */
-  handleWorkspaceClick(
-    workspace: Blockly.WorkspaceSvg,
-    e: Blockly.Events.Click,
-  ) {
-    const workspaceState = this.getState(workspace);
-    if (workspaceState !== Constants.STATE.WORKSPACE) {
-      this.resetFlyout(workspace, !!workspace.getToolbox());
-      this.setState(workspace, Constants.STATE.WORKSPACE);
-    }
-  }
-
-  /**
-   * Moves the cursor to the toolbox when a user clicks on a toolbox category.
-   * Moves the cursor to the workspace if theh user closes the toolbox category.
-   *
-   * @param workspace The workspace the toolbox is on.
-   * @param e The event emitted from the workspace.
-   */
-  handleToolboxCategoryClick(
-    workspace: Blockly.WorkspaceSvg,
-    e: Blockly.Events.ToolboxItemSelect,
-  ) {
-    const workspaceState = this.getState(workspace);
-    if (e.newItem && workspaceState !== Constants.STATE.TOOLBOX) {
-      // If the toolbox category was just clicked, focus on the toolbox.
-      // this.focusToolbox(workspace);
-    } else if (!e.newItem) {
-      // If the toolbox was closed, focus on the workspace.
-      this.resetFlyout(workspace, !!workspace.getToolbox());
-      this.setState(workspace, Constants.STATE.WORKSPACE);
     }
   }
 
