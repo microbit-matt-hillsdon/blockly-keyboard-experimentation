@@ -111,7 +111,6 @@ export class KeyboardNavigation {
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
-        e.preventDefault();
         this.navigationController.focusWorkspace(workspace);
       } else {
         this.navigationController.handleFocusWorkspace(workspace);

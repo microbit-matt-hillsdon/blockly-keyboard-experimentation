@@ -495,7 +495,10 @@ export class Navigation {
     workspace: Blockly.WorkspaceSvg,
     relatedTarget: BlurRelatedTarget,
   ) {
-    if (relatedTarget === BlurRelatedTarget.OTHER) {
+    if (
+      !Blockly.Gesture.inProgress() &&
+      relatedTarget === BlurRelatedTarget.OTHER
+    ) {
       workspace.hideChaff();
       const reset = !!workspace.getToolbox();
       this.resetFlyout(workspace, reset);
