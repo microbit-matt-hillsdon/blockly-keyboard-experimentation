@@ -111,7 +111,18 @@ export class KeyboardNavigation {
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
-        this.navigationController.focusWorkspace(workspace);
+        // Starting a gesture unconditionally calls markFocus on the parent SVG
+        // but we really don't want to move to the workspace (and close the
+        // flyout) if all you did was click in a flyout, potentially on a
+        // button.
+        const isCurrentGestureInFlyout =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          !!(this.workspace.currentGesture_ as any)?.flyout;
+        if (isCurrentGestureInFlyout) {
+          this.navigationController.focusFlyout(workspace);
+        } else {
+          this.navigationController.focusWorkspace(workspace);
+        }
       } else {
         this.navigationController.handleFocusWorkspace(workspace);
       }

@@ -214,6 +214,14 @@ export class Navigation {
         break;
       case Blockly.Events.BLOCK_CREATE:
         this.handleBlockCreate(workspace, e);
+        break;
+      case Blockly.Events.SELECTED:
+        // When a gesture starts we intentionally avoid focussing the workspace.
+        // But when it becomes a drag we need to do so.
+        if (workspace.currentGesture_?.isDragging()) {
+          this.focusWorkspace(workspace);
+        }
+        break;
     }
   }
 
@@ -265,10 +273,26 @@ export class Navigation {
       e.type === Blockly.Events.BLOCK_CREATE &&
       this.getState(mainWorkspace) === Constants.STATE.FLYOUT
     ) {
-      // This happens when variables are created which recreates the button
-      // invalidating the cursor.
-      this.moveToFirstFlyoutItem(mainWorkspace);
+      // This happens when variables are created which recreates the flyout
+      // contents, invalidating the cursor. Ideally the cursor would take
+      // care of this.
+      const curNode = this.getFlyoutCursor(mainWorkspace)?.getCurNode();
+      if (curNode && this.isFlyoutItemDisposed(curNode)) {
+        this.moveToFirstFlyoutItem(mainWorkspace);
+      }
     }
+  }
+
+  private isFlyoutItemDisposed(node: Blockly.ASTNode) {
+    if (node.getSourceBlock()?.disposed) {
+      return false;
+    }
+    const location = node.getLocation();
+    if (location instanceof Blockly.FlyoutButton) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (location as any).svgGroup.parentNode === null;
+    }
+    return false;
   }
 
   /**
@@ -482,7 +506,6 @@ export class Navigation {
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.getFlyoutCursor(workspace)?.draw();
-    this.moveToFirstFlyoutItem(workspace);
 
     // Prevent shift-tab to the toolbox while the flyout has focus.
     const toolboxElement = getToolboxElement(workspace);
