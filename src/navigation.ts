@@ -215,14 +215,6 @@ export class Navigation {
       case Blockly.Events.BLOCK_CREATE:
         this.handleBlockCreate(workspace, e);
         break;
-      case Blockly.Events.SELECTED:
-        // When a gesture starts we intentionally avoid focussing the workspace.
-        // But when it becomes a drag we need to do so.
-        // TODO: this doesn't work if we just click on a block in the flyout.
-        if (workspace.currentGesture_?.isDragging()) {
-          this.focusWorkspace(workspace);
-        }
-        break;
     }
   }
 

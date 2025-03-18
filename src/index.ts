@@ -115,10 +115,11 @@ export class KeyboardNavigation {
         // but we really don't want to move to the workspace (and close the
         // flyout) if all you did was click in a flyout, potentially on a
         // button.
-        const isCurrentGestureInFlyout =
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          !!(this.workspace.currentGesture_ as any)?.flyout;
-        if (isCurrentGestureInFlyout) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const gestureInternals = this.workspace.currentGesture_ as any;
+        const gestureFlyout = gestureInternals?.flyout;
+        const gestureStartBlock = gestureInternals?.startBlock;
+        if (gestureFlyout && !gestureStartBlock) {
           this.navigationController.focusFlyout(workspace);
         } else {
           this.navigationController.focusWorkspace(workspace);
