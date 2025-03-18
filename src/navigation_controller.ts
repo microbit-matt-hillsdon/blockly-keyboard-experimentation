@@ -26,7 +26,7 @@ import {Clipboard} from './actions/clipboard';
 import {DeleteAction} from './actions/delete';
 import {EditAction} from './actions/edit';
 import {InsertAction} from './actions/insert';
-import {BlurRelatedTarget, Navigation} from './navigation';
+import {Navigation} from './navigation';
 import {ShortcutDialog} from './shortcut_dialog';
 import {WorkspaceMovement} from './actions/ws_movement';
 import {ArrowNavigation} from './actions/arrow_navigation';
@@ -34,6 +34,7 @@ import {ExitAction} from './actions/exit';
 import {EnterAction} from './actions/enter';
 import {DisconnectAction} from './actions/disconnect';
 import {ActionMenu} from './actions/action_menu';
+import {BlurRelatedTarget} from './workspace_utilities';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 

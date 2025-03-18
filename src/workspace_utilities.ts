@@ -5,7 +5,6 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {BlurRelatedTarget} from './navigation';
 
 /**
  * Scrolls the provided bounds into view.
@@ -14,7 +13,7 @@ import {BlurRelatedTarget} from './navigation';
  * getting the top left corner of the bounds into view. It also adds some
  * padding around the bounds to allow the element to be comfortably in view.
  *
- * @param bounds A rectangle to scroll into view, as best as possible.
+ * @param originalBounds A rectangle to scroll into view, as best as possible.
  * @param workspace The workspace to scroll the given bounds into view in.
  */
 export function scrollBoundsIntoView(
@@ -70,10 +69,22 @@ export function scrollBoundsIntoView(
   workspace.scroll(workspace.scrollX + deltaX, workspace.scrollY + deltaY);
 }
 
+/**
+ * Get the workspace SVG group which is the element that takes focus.
+ *
+ * @param workspace The workspace.
+ * @returns The element.
+ */
 export function getWorkspaceElement(workspace: Blockly.Workspace): SVGElement {
   return (workspace as Blockly.WorkspaceSvg).getSvgGroup() as SVGElement;
 }
 
+/**
+ * Get the toolbox element that takes the focus (if any).
+ *
+ * @param workspace The workspace.
+ * @returns The element or null if a toolbox is not in use.
+ */
 export function getToolboxElement(
   workspace: Blockly.WorkspaceSvg,
 ): HTMLElement | null {
@@ -86,17 +97,47 @@ export function getToolboxElement(
   return null;
 }
 
+/**
+ * Get the flyout element we focus.
+ *
+ * @param workspace The workspace.
+ * @returns The element, or null if there is no flyout.
+ */
 export function getFlyoutElement(
   workspace: Blockly.WorkspaceSvg,
 ): SVGElement | null {
   const flyout = workspace.getFlyout();
   if (flyout != null && flyout instanceof Blockly.Flyout) {
+    // This relies on internals.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ((flyout as any).svgGroup_ as SVGElement) ?? null;
   }
   return null;
 }
 
+/**
+ * Used to understand how focus is leaving the toolbox and flyout.
+ */
+export enum BlurRelatedTarget {
+  TOOLBOX,
+  FLYOUT,
+  /**
+   * Used when there's no related node.  We see this as a result of alert()
+   * calls creating variables and need to avoid closing the flyout in this case.
+   */
+  NOWHERE,
+  OTHER,
+}
+
+/**
+ * Map from a blur event for the toolbox or fluout to a logical idea of what's
+ * losing the focus.
+ *
+ * @param event The event.
+ * @param container The other element (flyout or toolbox).
+ * @param containerValue Value to set if the related target is in the container.
+ * @returns A logical classification of the event's related target.
+ */
 export function classifyBlurRelatedTarget(
   event: Event,
   container: Element | null,

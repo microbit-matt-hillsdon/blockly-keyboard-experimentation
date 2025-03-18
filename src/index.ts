@@ -8,11 +8,11 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {CursorOptions, LineCursor} from './line_cursor';
 import {
+  BlurRelatedTarget,
   classifyBlurRelatedTarget,
   getFlyoutElement,
   getToolboxElement,
 } from './workspace_utilities';
-import {BlurRelatedTarget} from './navigation';
 
 /** Options object for KeyboardNavigation instances. */
 export type NavigationOptions = {

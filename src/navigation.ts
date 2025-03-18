@@ -18,22 +18,12 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {
+  BlurRelatedTarget,
   getFlyoutElement,
   getToolboxElement,
   getWorkspaceElement,
 } from './workspace_utilities';
 import {PassiveFocus} from './passive_focus';
-
-export enum BlurRelatedTarget {
-  TOOLBOX,
-  FLYOUT,
-  /**
-   * Used when there's no related node.  We see this as a result of alert()
-   * calls creating variables and need to avoid closing the flyout in this case.
-   */
-  NOWHERE,
-  OTHER,
-}
 
 /**
  * Class that holds all methods necessary for keyboard navigation to work.
@@ -478,13 +468,7 @@ export class Navigation {
       const reset = !!workspace.getToolbox();
       this.resetFlyout(workspace, reset);
     }
-    switch (this.getState(workspace)) {
-      case Constants.STATE.FLYOUT:
-      case Constants.STATE.TOOLBOX:
-        // Clear state since neither the flyout nor toolbox are focused anymore.
-        this.setState(workspace, Constants.STATE.NOWHERE);
-        break;
-    }
+    this.setState(workspace, Constants.STATE.NOWHERE);
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
