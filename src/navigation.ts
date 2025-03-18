@@ -531,7 +531,7 @@ export class Navigation {
     }
   }
 
-  moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
+  private moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
     const flyout = workspace.getFlyout();
     if (!flyout) return;
     const flyoutCursor = this.getFlyoutCursor(workspace);
