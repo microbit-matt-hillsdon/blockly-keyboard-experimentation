@@ -289,6 +289,7 @@ export class Navigation {
     }
     const location = node.getLocation();
     if (location instanceof Blockly.FlyoutButton) {
+      // No nice way to tell for a button. In v12 we could use getSvgGroup().
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (location as any).svgGroup.parentNode === null;
     }
@@ -506,6 +507,9 @@ export class Navigation {
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.getFlyoutCursor(workspace)?.draw();
+    if (!Blockly.Gesture.inProgress()) {
+      this.moveToFirstFlyoutItem(workspace);
+    }
 
     // Prevent shift-tab to the toolbox while the flyout has focus.
     const toolboxElement = getToolboxElement(workspace);
