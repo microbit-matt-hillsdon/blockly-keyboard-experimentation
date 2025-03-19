@@ -136,7 +136,10 @@ export class KeyboardNavigation {
     this.toolboxBlurListener = (e: Event) => {
       this.navigationController.handleBlurToolbox(
         workspace,
-        this.shouldCloseFlyoutOnBlur(e, flyoutElement),
+        this.shouldCloseFlyoutOnBlur(
+          (e as FocusEvent).relatedTarget,
+          flyoutElement,
+        ),
       );
     };
     toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
@@ -148,7 +151,10 @@ export class KeyboardNavigation {
     this.flyoutBlurListener = (e: Event) => {
       this.navigationController.handleBlurFlyout(
         workspace,
-        this.shouldCloseFlyoutOnBlur(e, toolboxElement),
+        this.shouldCloseFlyoutOnBlur(
+          (e as FocusEvent).relatedTarget,
+          toolboxElement,
+        ),
       );
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
@@ -236,19 +242,24 @@ export class KeyboardNavigation {
    * blurs. If a gesture is in progerss or we're moving from one the other
    * then we leave it open.
    *
-   * @param event The event on the flyout or toolbox.
+   * @param relatedTarget The related target from the event on the flyout or toolbox.
    * @param container The other element of flyout or toolbox (opposite to the event).
    * @returns true if the flyout should be closed, false otherwise.
    */
-  private shouldCloseFlyoutOnBlur(event: Event, container: Element | null) {
+  private shouldCloseFlyoutOnBlur(
+    relatedTarget: EventTarget | null,
+    container: Element | null,
+  ) {
     if (Blockly.Gesture.inProgress()) {
       return false;
     }
-    const fe = event as FocusEvent;
-    if (!fe.relatedTarget) {
+    if (!relatedTarget) {
       return false;
     }
-    if (container?.contains(fe.relatedTarget as Node)) {
+    if (
+      relatedTarget instanceof Node &&
+      container?.contains(relatedTarget as Node)
+    ) {
       return false;
     }
     return true;
