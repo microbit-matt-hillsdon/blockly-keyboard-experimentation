@@ -203,7 +203,8 @@ export class Navigation {
         break;
     }
 
-    // Hiding the cursor can show again when we re-render. Update it here.
+    // Hiding the cursor isn't permanent and can show again when we render.
+    // Rehide it:
     if (this.passiveFocusIndicator.isVisible()) {
       workspace.getCursor()?.hide();
     }
