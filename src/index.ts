@@ -109,7 +109,7 @@ export class KeyboardNavigation {
         // Starting a gesture unconditionally calls markFocused on the parent SVG
         // but we really don't want to move to the workspace (and close the
         // flyout) if all you did was click in a flyout, potentially on a
-        // button.
+        // button. See also `gesture_monkey_patch.js`.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gestureInternals = this.workspace.currentGesture_ as any;
         const gestureFlyout = gestureInternals?.flyout;

@@ -259,10 +259,7 @@ export class Navigation {
     ) {
       // When variables are created, that recreates the flyout contents, leaving the
       // cursor in an invalid state.
-      const curNode = this.getFlyoutCursor(mainWorkspace)?.getCurNode();
-      if (curNode && this.isFlyoutItemDisposed(curNode)) {
-        this.moveToFirstFlyoutItem(mainWorkspace);
-      }
+      this.resetFlyoutCursorPosition(mainWorkspace);
     }
   }
 
@@ -361,6 +358,11 @@ export class Navigation {
     this.focusFlyout(mainWorkspace);
   }
 
+  /**
+   * Sets browser focus to the workspace.
+   *
+   * @param workspace The workspace to focus.
+   */
   focusWorkspace(workspace: Blockly.WorkspaceSvg) {
     getWorkspaceElement(workspace).focus();
   }
@@ -469,7 +471,7 @@ export class Navigation {
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.getFlyoutCursor(workspace)?.draw();
-    this.moveToFirstFlyoutItem(workspace);
+    this.resetFlyoutCursorPosition(workspace);
 
     // Prevent shift-tab to the toolbox while the flyout has focus.
     const toolboxElement = getToolboxElement(workspace);
@@ -499,11 +501,17 @@ export class Navigation {
     }
   }
 
-  private moveToFirstFlyoutItem(workspace: Blockly.WorkspaceSvg) {
+  private resetFlyoutCursorPosition(workspace: Blockly.WorkspaceSvg) {
     const flyout = workspace.getFlyout();
     if (!flyout) return;
     const flyoutCursor = this.getFlyoutCursor(workspace);
     if (!flyoutCursor) return;
+
+    if (
+      flyoutCursor.getCurNode() &&
+      !this.isFlyoutItemDisposed(flyoutCursor.getCurNode())
+    )
+      return;
 
     const flyoutContents = flyout.getContents();
     const firstFlyoutItem = flyoutContents[0];
