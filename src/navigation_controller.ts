@@ -34,7 +34,6 @@ import {ExitAction} from './actions/exit';
 import {EnterAction} from './actions/enter';
 import {DisconnectAction} from './actions/disconnect';
 import {ActionMenu} from './actions/action_menu';
-import {BlurRelatedTarget} from './workspace_utilities';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
@@ -213,9 +212,9 @@ export class NavigationController {
 
   handleBlurToolbox(
     workspace: Blockly.WorkspaceSvg,
-    relatedTarget: BlurRelatedTarget,
+    allowCloseFlyout: boolean,
   ) {
-    this.navigation.handleBlurToolbox(workspace, relatedTarget);
+    this.navigation.handleBlurToolbox(workspace, allowCloseFlyout);
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
@@ -226,11 +225,8 @@ export class NavigationController {
     this.navigation.handleFocusFlyout(workspace);
   }
 
-  handleBlurFlyout(
-    workspace: Blockly.WorkspaceSvg,
-    relatedTarget: BlurRelatedTarget,
-  ) {
-    this.navigation.handleBlurFlyout(workspace, relatedTarget);
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, allowClose: boolean) {
+    this.navigation.handleBlurFlyout(workspace, allowClose);
   }
 
   /**

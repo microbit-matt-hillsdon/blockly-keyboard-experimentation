@@ -18,7 +18,6 @@ import {
   FlyoutCursor,
 } from './flyout_cursor';
 import {
-  BlurRelatedTarget,
   getFlyoutElement,
   getToolboxElement,
   getWorkspaceElement,
@@ -434,12 +433,9 @@ export class Navigation {
    */
   handleBlurToolbox(
     workspace: Blockly.WorkspaceSvg,
-    relatedTarget: BlurRelatedTarget,
+    allowCloseFlyout: boolean,
   ) {
-    if (
-      !Blockly.Gesture.inProgress() &&
-      relatedTarget === BlurRelatedTarget.OTHER
-    ) {
+    if (!Blockly.Gesture.inProgress() && allowCloseFlyout) {
       workspace.hideChaff();
     }
     this.setState(workspace, Constants.STATE.NOWHERE);
@@ -469,14 +465,8 @@ export class Navigation {
     }
   }
 
-  handleBlurFlyout(
-    workspace: Blockly.WorkspaceSvg,
-    relatedTarget: BlurRelatedTarget,
-  ) {
-    if (
-      !Blockly.Gesture.inProgress() &&
-      relatedTarget === BlurRelatedTarget.OTHER
-    ) {
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, allowClose: boolean) {
+    if (!Blockly.Gesture.inProgress() && allowClose) {
       workspace.hideChaff();
     }
     this.getFlyoutCursor(workspace)?.hide();

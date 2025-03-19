@@ -116,39 +116,23 @@ export function getFlyoutElement(
 }
 
 /**
- * Used to understand how focus is leaving the toolbox and flyout.
- */
-export enum BlurRelatedTarget {
-  TOOLBOX,
-  FLYOUT,
-  /**
-   * Used when there's no related node.  We see this as a result of alert()
-   * calls creating variables and need to avoid closing the flyout in this case.
-   */
-  NOWHERE,
-  OTHER,
-}
-
-/**
  * Map from a blur event for the toolbox or fluout to a logical idea of what's
  * losing the focus.
  *
- * @param event The event.
- * @param container The other element (flyout or toolbox).
- * @param containerValue Value to set if the related target is in the container.
- * @returns A logical classification of the event's related target.
+ * @param event The event on the flyout or toolbox.
+ * @param container The other element of flyout or toolbox (opposite to the event).
+ * @returns true if the flyout should be closed, false otherwise.
  */
-export function classifyBlurRelatedTarget(
+export function shouldCloseFlyoutOnBlur(
   event: Event,
   container: Element | null,
-  containerValue: BlurRelatedTarget,
 ) {
   const fe = event as FocusEvent;
   if (!fe.relatedTarget) {
-    return BlurRelatedTarget.NOWHERE;
+    return false;
   }
   if (container?.contains(fe.relatedTarget as Node)) {
-    return containerValue;
+    return false;
   }
-  return BlurRelatedTarget.OTHER;
+  return true;
 }

@@ -8,8 +8,7 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {CursorOptions, LineCursor} from './line_cursor';
 import {
-  BlurRelatedTarget,
-  classifyBlurRelatedTarget,
+  shouldCloseFlyoutOnBlur,
   getFlyoutElement,
   getToolboxElement,
 } from './workspace_utilities';
@@ -142,7 +141,7 @@ export class KeyboardNavigation {
     this.toolboxBlurListener = (e: Event) => {
       this.navigationController.handleBlurToolbox(
         workspace,
-        classifyBlurRelatedTarget(e, flyoutElement, BlurRelatedTarget.FLYOUT),
+        shouldCloseFlyoutOnBlur(e, flyoutElement),
       );
     };
     toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
@@ -154,7 +153,7 @@ export class KeyboardNavigation {
     this.flyoutBlurListener = (e: Event) => {
       this.navigationController.handleBlurFlyout(
         workspace,
-        classifyBlurRelatedTarget(e, toolboxElement, BlurRelatedTarget.TOOLBOX),
+        shouldCloseFlyoutOnBlur(e, toolboxElement),
       );
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
