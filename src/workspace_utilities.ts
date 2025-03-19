@@ -13,7 +13,7 @@ import * as Blockly from 'blockly/core';
  * getting the top left corner of the bounds into view. It also adds some
  * padding around the bounds to allow the element to be comfortably in view.
  *
- * @param originalBounds A rectangle to scroll into view, as best as possible.
+ * @param bounds A rectangle to scroll into view, as best as possible.
  * @param workspace The workspace to scroll the given bounds into view in.
  */
 export function scrollBoundsIntoView(
