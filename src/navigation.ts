@@ -501,6 +501,12 @@ export class Navigation {
     }
   }
 
+  /**
+   * Move the flyout cursor to the start if unset (as it is initially despite
+   * the types) or on a disposed item.
+   *
+   * @param workspace The workspace.
+   */
   private resetFlyoutCursorPosition(workspace: Blockly.WorkspaceSvg) {
     const flyout = workspace.getFlyout();
     if (!flyout) return;
