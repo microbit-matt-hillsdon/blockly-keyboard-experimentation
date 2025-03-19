@@ -292,8 +292,7 @@ export class Navigation {
     e: Blockly.Events.Abstract,
   ) {
     if (this.getState(workspace) === Constants.STATE.FLYOUT) {
-      this.resetFlyout(workspace, !!workspace.getToolbox());
-      this.setState(workspace, Constants.STATE.WORKSPACE);
+      this.focusWorkspace(workspace);
     }
   }
 
@@ -393,8 +392,6 @@ export class Navigation {
   handleFocusWorkspace(workspace: Blockly.WorkspaceSvg) {
     if (!Blockly.Gesture.inProgress()) {
       workspace.hideChaff();
-      const reset = !!workspace.getToolbox();
-      this.resetFlyout(workspace, reset);
     }
     this.setState(workspace, Constants.STATE.WORKSPACE);
     this.setCursorOnWorkspaceFocus(workspace, true);
@@ -432,7 +429,6 @@ export class Navigation {
       return;
     }
     this.setState(workspace, Constants.STATE.TOOLBOX);
-    this.resetFlyout(workspace, false /* shouldHide */);
 
     if (!toolbox.getSelectedItem()) {
       // Find the first item that is selectable.
@@ -465,8 +461,6 @@ export class Navigation {
       relatedTarget === BlurRelatedTarget.OTHER
     ) {
       workspace.hideChaff();
-      const reset = !!workspace.getToolbox();
-      this.resetFlyout(workspace, reset);
     }
     this.setState(workspace, Constants.STATE.NOWHERE);
   }
@@ -504,11 +498,10 @@ export class Navigation {
       relatedTarget === BlurRelatedTarget.OTHER
     ) {
       workspace.hideChaff();
-      const reset = !!workspace.getToolbox();
-      this.resetFlyout(workspace, reset);
     }
     this.getFlyoutCursor(workspace)?.hide();
 
+    // Reinstate tab to toolbox.
     const toolboxElement = getToolboxElement(workspace);
     if (toolboxElement) {
       toolboxElement.tabIndex = 0;
@@ -586,21 +579,6 @@ export class Navigation {
     const cursor = flyout ? flyout.getWorkspace().getCursor() : null;
 
     return cursor as FlyoutCursor;
-  }
-
-  /**
-   * Hides the flyout cursor and optionally hides the flyout.
-   *
-   * @param workspace The workspace.
-   * @param shouldHide True if the flyout should be hidden.
-   */
-  resetFlyout(workspace: Blockly.WorkspaceSvg, shouldHide: boolean) {
-    if (this.getFlyoutCursor(workspace)) {
-      this.getFlyoutCursor(workspace)!.hide();
-      if (shouldHide) {
-        workspace.getFlyout()!.hide();
-      }
-    }
   }
 
   /**
