@@ -12,22 +12,6 @@
 
 import * as Blockly from 'blockly/core';
 
-const oldDoBlockClick = Blockly.Gesture.prototype.doBlockClick;
-
-/**
- * Intercept a block click and focus the workspace in the auto-closing flyout
- * case.
- * @this {Blockly.Gesture}
- * @override
- */
-Blockly.Gesture.prototype.doBlockClick = function (e) {
-  oldDoBlockClick.call(this, e);
-
-  if (this.flyout && this.flyout.autoClose) {
-    this.creatorWorkspace?.getSvgGroup().focus();
-  }
-};
-
 const oldDispose = Blockly.Gesture.prototype.dispose;
 
 /**

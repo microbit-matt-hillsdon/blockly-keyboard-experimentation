@@ -113,7 +113,14 @@ export class KeyboardNavigation {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gestureInternals = this.workspace.currentGesture_ as any;
         const gestureFlyout = gestureInternals?.flyout;
-        if (gestureFlyout) {
+        const gestureFlyoutAutoClose = gestureFlyout?.autoClose;
+        const gestureOnBlock = gestureInternals?.startBlock;
+        if (
+          // When clicking on flyout that cannot close.
+          (gestureFlyout && !gestureFlyoutAutoClose) ||
+          // When clicking on a block in a flyout that can close.
+          (gestureFlyout && gestureFlyoutAutoClose && !gestureOnBlock)
+        ) {
           this.navigationController.focusFlyout(workspace);
         } else {
           this.navigationController.focusWorkspace(workspace);
