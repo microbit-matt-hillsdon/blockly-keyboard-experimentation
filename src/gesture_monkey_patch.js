@@ -21,13 +21,18 @@ const oldDoBlockClick = Blockly.Gesture.prototype.doBlockClick;
  * @override
  */
 Blockly.Gesture.prototype.doBlockClick = function (e) {
-  this.creatorWorkspace?.getSvgGroup().focus();
   oldDoBlockClick.call(this, e);
+
+  if (this.flyout && this.flyout.autoClose) {
+    this.creatorWorkspace?.getSvgGroup().focus();
+  }
 };
 
 const oldDispose = Blockly.Gesture.prototype.dispose;
 Blockly.Gesture.prototype.dispose = function () {
-  if (this.targetBlock && !this.targetBlock.disposed) {
+  // This is a bit of a cludge and focus management needs to be better
+  // integrated with Gesture.
+  if (this.targetBlock && !this.targetBlock.disposed && !this.isBlockClick()) {
     this.creatorWorkspace?.getSvgGroup().focus();
   }
   oldDispose.call(this);

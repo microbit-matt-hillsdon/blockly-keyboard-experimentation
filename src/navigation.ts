@@ -201,6 +201,15 @@ export class Navigation {
           this.handleBlockMutation(workspace, e as Blockly.Events.BlockChange);
         }
         break;
+      case Blockly.Events.BLOCK_CREATE: {
+        // this.focusWorkspace(workspace);
+        break;
+      }
+    }
+
+    // Hiding the cursor can show again when we re-render. Update it here.
+    if (this.passiveFocusIndicator.isVisible()) {
+      workspace.getCursor()?.hide();
     }
   }
 

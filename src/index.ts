@@ -123,7 +123,6 @@ export class KeyboardNavigation {
           this.navigationController.focusWorkspace(workspace);
         }
       } else {
-        console.trace();
         this.navigationController.handleFocusWorkspace(workspace);
       }
     };
