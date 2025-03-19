@@ -210,11 +210,8 @@ export class NavigationController {
     this.navigation.handleFocusToolbox(workspace);
   }
 
-  handleBlurToolbox(
-    workspace: Blockly.WorkspaceSvg,
-    allowCloseFlyout: boolean,
-  ) {
-    this.navigation.handleBlurToolbox(workspace, allowCloseFlyout);
+  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
+    this.navigation.handleBlurToolbox(workspace, closeFlyout);
   }
 
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
@@ -225,8 +222,8 @@ export class NavigationController {
     this.navigation.handleFocusFlyout(workspace);
   }
 
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, allowClose: boolean) {
-    this.navigation.handleBlurFlyout(workspace, allowClose);
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
+    this.navigation.handleBlurFlyout(workspace, closeFlyout);
   }
 
   /**

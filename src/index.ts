@@ -7,11 +7,7 @@
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {CursorOptions, LineCursor} from './line_cursor';
-import {
-  shouldCloseFlyoutOnBlur,
-  getFlyoutElement,
-  getToolboxElement,
-} from './workspace_utilities';
+import {getFlyoutElement, getToolboxElement} from './workspace_utilities';
 
 /** Options object for KeyboardNavigation instances. */
 export type NavigationOptions = {
@@ -140,7 +136,7 @@ export class KeyboardNavigation {
     this.toolboxBlurListener = (e: Event) => {
       this.navigationController.handleBlurToolbox(
         workspace,
-        shouldCloseFlyoutOnBlur(e, flyoutElement),
+        this.shouldCloseFlyoutOnBlur(e, flyoutElement),
       );
     };
     toolboxElement?.addEventListener('focus', this.toolboxFocusListener);
@@ -152,7 +148,7 @@ export class KeyboardNavigation {
     this.flyoutBlurListener = (e: Event) => {
       this.navigationController.handleBlurFlyout(
         workspace,
-        shouldCloseFlyoutOnBlur(e, toolboxElement),
+        this.shouldCloseFlyoutOnBlur(e, toolboxElement),
       );
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
@@ -233,5 +229,28 @@ export class KeyboardNavigation {
       },
     });
     this.workspace.setTheme(newTheme);
+  }
+
+  /**
+   * Identify whether we should close the flyout when the toolbox or flyout
+   * blurs. If a gesture is in progerss or we're moving from one the other
+   * then we leave it open.
+   *
+   * @param event The event on the flyout or toolbox.
+   * @param container The other element of flyout or toolbox (opposite to the event).
+   * @returns true if the flyout should be closed, false otherwise.
+   */
+  private shouldCloseFlyoutOnBlur(event: Event, container: Element | null) {
+    if (Blockly.Gesture.inProgress()) {
+      return false;
+    }
+    const fe = event as FocusEvent;
+    if (!fe.relatedTarget) {
+      return false;
+    }
+    if (container?.contains(fe.relatedTarget as Node)) {
+      return false;
+    }
+    return true;
   }
 }

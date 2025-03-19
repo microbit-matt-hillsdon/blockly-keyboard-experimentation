@@ -114,25 +114,3 @@ export function getFlyoutElement(
   }
   return null;
 }
-
-/**
- * Map from a blur event for the toolbox or fluout to a logical idea of what's
- * losing the focus.
- *
- * @param event The event on the flyout or toolbox.
- * @param container The other element of flyout or toolbox (opposite to the event).
- * @returns true if the flyout should be closed, false otherwise.
- */
-export function shouldCloseFlyoutOnBlur(
-  event: Event,
-  container: Element | null,
-) {
-  const fe = event as FocusEvent;
-  if (!fe.relatedTarget) {
-    return false;
-  }
-  if (container?.contains(fe.relatedTarget as Node)) {
-    return false;
-  }
-  return true;
-}

@@ -441,14 +441,11 @@ export class Navigation {
    * and a gesture is not in progress.
    *
    * @param workspace The workspace the flyout is on.
-   * @param allowCloseFlyout False if the flyout cannot be closed, true otherwise.
+   * @param closeFlyout True to close the flyout, false otherwise.
    */
-  handleBlurToolbox(
-    workspace: Blockly.WorkspaceSvg,
-    allowCloseFlyout: boolean,
-  ) {
+  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
     this.setState(workspace, Constants.STATE.NOWHERE);
-    if (!Blockly.Gesture.inProgress() && allowCloseFlyout) {
+    if (closeFlyout) {
       workspace.hideChaff();
     }
   }
@@ -486,11 +483,11 @@ export class Navigation {
    * and a gesture is not in progress.
    *
    * @param workspace The workspace the flyout is on.
-   * @param allowClose False if the flyout cannot be closed, true otherwise.
+   * @param closeFlyout True to close the flyout, false otherwise.
    */
-  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, allowClose: boolean) {
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
     this.setState(workspace, Constants.STATE.NOWHERE);
-    if (!Blockly.Gesture.inProgress() && allowClose) {
+    if (closeFlyout) {
       workspace.hideChaff();
     }
     this.getFlyoutCursor(workspace)?.hide();
