@@ -268,7 +268,7 @@ export class Navigation {
 
   private isFlyoutItemDisposed(node: Blockly.ASTNode) {
     if (node.getSourceBlock()?.disposed) {
-      return false;
+      return true;
     }
     const location = node.getLocation();
     if (location instanceof Blockly.FlyoutButton) {
