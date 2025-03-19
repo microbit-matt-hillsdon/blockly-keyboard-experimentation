@@ -202,9 +202,6 @@ export class Navigation {
           this.handleBlockMutation(workspace, e as Blockly.Events.BlockChange);
         }
         break;
-      case Blockly.Events.BLOCK_CREATE:
-        this.handleBlockCreate(workspace, e);
-        break;
     }
   }
 
@@ -277,23 +274,6 @@ export class Navigation {
       return (location as any).svgGroup.parentNode === null;
     }
     return false;
-  }
-
-  /**
-   * Moves the cursor to the workspace if a block has been dragged from a simple
-   * toolbox. For a category toolbox this is handled in
-   * handleToolboxCategoryClick_.
-   *
-   * @param workspace The workspace the cursor belongs to.
-   * @param e The Blockly event to process.
-   */
-  handleBlockCreate(
-    workspace: Blockly.WorkspaceSvg,
-    e: Blockly.Events.Abstract,
-  ) {
-    if (this.getState(workspace) === Constants.STATE.FLYOUT) {
-      this.focusWorkspace(workspace);
-    }
   }
 
   /**

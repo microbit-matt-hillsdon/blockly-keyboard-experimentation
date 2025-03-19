@@ -118,13 +118,13 @@ export class KeyboardNavigation {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gestureInternals = this.workspace.currentGesture_ as any;
         const gestureFlyout = gestureInternals?.flyout;
-        const gestureStartBlock = gestureInternals?.startBlock;
-        if (gestureFlyout && !gestureStartBlock) {
+        if (gestureFlyout) {
           this.navigationController.focusFlyout(workspace);
         } else {
           this.navigationController.focusWorkspace(workspace);
         }
       } else {
+        console.trace();
         this.navigationController.handleFocusWorkspace(workspace);
       }
     };
