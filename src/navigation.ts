@@ -372,16 +372,16 @@ export class Navigation {
 
   /**
    * Sets the navigation state to workspace and moves the cursor to either the
-   * top block on a workspace or to the workspace.
+   * top block on a workspace or to the workspace. Switches from passive focus
+   * indication to showing the cursor.
    *
-   * @param workspace The workspace to focus on.
-   * @param keepCursorPosition Whether to retain the cursor's previous position.
+   * @param workspace The workspace that has gained focus.
    */
   handleFocusWorkspace(workspace: Blockly.WorkspaceSvg) {
+    this.setState(workspace, Constants.STATE.WORKSPACE);
     if (!Blockly.Gesture.inProgress()) {
       workspace.hideChaff();
     }
-    this.setState(workspace, Constants.STATE.WORKSPACE);
     this.setCursorOnWorkspaceFocus(workspace, true);
 
     const cursor = workspace.getCursor();
@@ -391,7 +391,13 @@ export class Navigation {
     }
   }
 
+  /**
+   * Clears the navigation state and switches to using the passive focus indicator.
+   *
+   * @param workspace The workspace that has lost focus.
+   */
   handleBlurWorkspace(workspace: Blockly.WorkspaceSvg) {
+    this.setState(workspace, Constants.STATE.NOWHERE);
     const cursor = workspace.getCursor();
     if (cursor) {
       cursor.hide();
@@ -401,6 +407,11 @@ export class Navigation {
     }
   }
 
+  /**
+   * Sets browser focus to the toolbox (if any).
+   *
+   * @param workspace The workspace with the toolbox.
+   */
   focusToolbox(workspace: Blockly.WorkspaceSvg) {
     getToolboxElement(workspace)?.focus();
   }
@@ -431,41 +442,42 @@ export class Navigation {
   }
 
   /**
-   * Blurs (de-focuses) the workspace's toolbox, and hides the flyout if it's
-   * currently visible.
+   * Clears the navigation state and closes the flyout if `allowClose` is true
+   * and a gesture is not in progress.
    *
-   * Note that it's up to callers to ensure that this function is only called
-   * when appropriate (i.e. when the workspace actually has a toolbox that's
-   * currently focused).
-   *
-   * @param workspace The workspace containing the toolbox.
+   * @param workspace The workspace the flyout is on.
+   * @param allowCloseFlyout False if the flyout cannot be closed, true otherwise.
    */
   handleBlurToolbox(
     workspace: Blockly.WorkspaceSvg,
     allowCloseFlyout: boolean,
   ) {
+    this.setState(workspace, Constants.STATE.NOWHERE);
     if (!Blockly.Gesture.inProgress() && allowCloseFlyout) {
       workspace.hideChaff();
     }
-    this.setState(workspace, Constants.STATE.NOWHERE);
   }
 
+  /**
+   * Sets browser focus to the flyout (if any).
+   *
+   * @param workspace The workspace with the flyout.
+   */
   focusFlyout(workspace: Blockly.WorkspaceSvg) {
     getFlyoutElement(workspace)?.focus();
   }
 
   /**
    * Sets the navigation state to flyout and moves the cursor to the first
-   * block or button in the flyout.
+   * block or button in the flyout. We disable tabbing to the toolbox while
+   * the flyout has focus as we use left/right for that.
    *
    * @param workspace The workspace the flyout is on.
    */
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.getFlyoutCursor(workspace)?.draw();
-    if (!Blockly.Gesture.inProgress()) {
-      this.moveToFirstFlyoutItem(workspace);
-    }
+    this.moveToFirstFlyoutItem(workspace);
 
     // Prevent shift-tab to the toolbox while the flyout has focus.
     const toolboxElement = getToolboxElement(workspace);
@@ -474,7 +486,15 @@ export class Navigation {
     }
   }
 
+  /**
+   * Clears the navigation state and closes the flyout if `allowClose` is true
+   * and a gesture is not in progress.
+   *
+   * @param workspace The workspace the flyout is on.
+   * @param allowClose False if the flyout cannot be closed, true otherwise.
+   */
   handleBlurFlyout(workspace: Blockly.WorkspaceSvg, allowClose: boolean) {
+    this.setState(workspace, Constants.STATE.NOWHERE);
     if (!Blockly.Gesture.inProgress() && allowClose) {
       workspace.hideChaff();
     }
