@@ -39,7 +39,7 @@ const oldDispose = Blockly.Gesture.prototype.dispose;
  */
 Blockly.Gesture.prototype.dispose = function () {
   // This is a bit of a cludge and focus management needs to be better
-  // integrated with Gesture.
+  // integrated with Gesture. The intent is to move focus at the end of a drag.
   if (this.targetBlock && !this.targetBlock.disposed && !this.isBlockClick()) {
     this.creatorWorkspace?.getSvgGroup().focus();
   }
