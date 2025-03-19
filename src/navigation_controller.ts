@@ -200,12 +200,6 @@ export class NavigationController {
     this.navigation.focusToolbox(workspace);
   }
 
-  /**
-   * Sets the navigation state to toolbox and selects the first category in the
-   * toolbox. No-op if a toolbox does not exist on the given workspace.
-   *
-   * @param workspace The workspace to get the toolbox on.
-   */
   handleFocusToolbox(workspace: Blockly.WorkspaceSvg) {
     this.navigation.handleFocusToolbox(workspace);
   }
