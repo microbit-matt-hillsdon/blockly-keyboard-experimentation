@@ -15,8 +15,8 @@ import * as Blockly from 'blockly/core';
 const oldDoBlockClick = Blockly.Gesture.prototype.doBlockClick;
 
 /**
- * Execute a block click. When in accessibility mode shift clicking will move
- * the cursor to the block.
+ * Intercept a block click and focus the workspace in the auto-closing flyout
+ * case.
  * @this {Blockly.Gesture}
  * @override
  */
@@ -29,6 +29,14 @@ Blockly.Gesture.prototype.doBlockClick = function (e) {
 };
 
 const oldDispose = Blockly.Gesture.prototype.dispose;
+
+/**
+ * Intercept the end of a gesture and ensure the workspace is focused.
+ * See also the listener is index.ts that subverts the markFocused call
+ * in `doStart`.
+ * @this {Blockly.Gesture}
+ * @override
+ */
 Blockly.Gesture.prototype.dispose = function () {
   // This is a bit of a cludge and focus management needs to be better
   // integrated with Gesture.

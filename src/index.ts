@@ -110,7 +110,7 @@ export class KeyboardNavigation {
 
     this.focusListener = (e: Event) => {
       if (e.currentTarget === this.workspace.getParentSvg()) {
-        // Starting a gesture unconditionally calls markFocus on the parent SVG
+        // Starting a gesture unconditionally calls markFocused on the parent SVG
         // but we really don't want to move to the workspace (and close the
         // flyout) if all you did was click in a flyout, potentially on a
         // button.
