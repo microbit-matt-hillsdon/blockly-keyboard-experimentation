@@ -257,9 +257,8 @@ export class Navigation {
       e.type === Blockly.Events.BLOCK_CREATE &&
       this.getState(mainWorkspace) === Constants.STATE.FLYOUT
     ) {
-      // This happens when variables are created which recreates the flyout
-      // contents, invalidating the cursor. Ideally the cursor would take
-      // care of this.
+      // When variables are created, that recreates the flyout contents, leaving the
+      // cursor in an invalid state.
       const curNode = this.getFlyoutCursor(mainWorkspace)?.getCurNode();
       if (curNode && this.isFlyoutItemDisposed(curNode)) {
         this.moveToFirstFlyoutItem(mainWorkspace);
