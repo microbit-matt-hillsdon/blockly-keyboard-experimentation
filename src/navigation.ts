@@ -201,6 +201,13 @@ export class Navigation {
           this.handleBlockMutation(workspace, e as Blockly.Events.BlockChange);
         }
         break;
+      case Blockly.Events.BLOCK_CREATE:
+        if (workspace.isDragging()) {
+          // Hide the passive focus indicator when dragging so as not to fight
+          // with the drop cues. Safe because of the gesture monkey patch.
+          this.passiveFocusIndicator.hide();
+        }
+        break;
     }
 
     // Hiding the cursor isn't permanent and can show again when we render.
@@ -470,6 +477,10 @@ export class Navigation {
    * @param workspace The workspace the flyout is on.
    */
   handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
+    // Note this can happen when the flyout was already focussed as regrettably
+    // a click on the flyout calls markFocused() on the workspace SVG and the
+    // focus is then redirected back to the flyout.
+
     this.setState(workspace, Constants.STATE.FLYOUT);
     this.getFlyoutCursor(workspace)?.draw();
     this.resetFlyoutCursorPosition(workspace);
