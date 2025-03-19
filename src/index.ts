@@ -154,7 +154,7 @@ export class KeyboardNavigation {
     this.flyoutBlurListener = (e: Event) => {
       this.navigationController.handleBlurFlyout(
         workspace,
-        classifyBlurRelatedTarget(e, flyoutElement, BlurRelatedTarget.TOOLBOX),
+        classifyBlurRelatedTarget(e, toolboxElement, BlurRelatedTarget.TOOLBOX),
       );
     };
     flyoutElement?.addEventListener('focus', this.flyoutFocusListener);
