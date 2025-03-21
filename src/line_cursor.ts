@@ -14,7 +14,7 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {ASTNode, Marker} from 'blockly/core';
+import {ASTNode, Marker, WidgetDiv} from 'blockly/core';
 import {getWorkspaceElement, scrollBoundsIntoView} from './workspace_utilities';
 
 /** Options object for LineCursor instances. */
@@ -520,10 +520,15 @@ export class LineCursor extends Marker {
     // Try to scroll cursor into view.
     if (newNode?.getType() === ASTNode.types.BLOCK) {
       const block = newNode.getLocation() as Blockly.BlockSvg;
-      scrollBoundsIntoView(
-        block.getBoundingRectangleWithoutChildren(),
-        block.workspace,
-      );
+
+      // Repositioning workspace causes blockly menu to hide if we right click
+      // so we don't reposition if it's opened.
+      if (!WidgetDiv.isVisible()) {
+        scrollBoundsIntoView(
+          block.getBoundingRectangleWithoutChildren(),
+          block.workspace,
+        );
+      }
     }
   }
 
