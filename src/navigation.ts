@@ -415,14 +415,15 @@ export class Navigation {
   }
 
   /**
-   * Clears the navigation state and switches to using the passive focus indicator.
+   * Clears navigation state and switches to using the passive focus indicator
+   * if it is not the context menu / field input that is causing blur.
    *
    * @param workspace The workspace that has lost focus.
    */
   handleBlurWorkspace(workspace: Blockly.WorkspaceSvg) {
     this.setState(workspace, Constants.STATE.NOWHERE);
     const cursor = workspace.getCursor();
-    if (cursor) {
+    if (cursor && !Blockly.WidgetDiv.isVisible()) {
       if (cursor.getCurNode()) {
         this.passiveFocusIndicator.show(cursor.getCurNode());
       }
