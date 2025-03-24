@@ -475,6 +475,24 @@ export class LineCursor extends Marker {
   }
 
   /**
+   * Get the current location of the cursor.
+   *
+   * Overrides normal Marker getCurNode to get current node from the selected
+   * block. Right clicking on a block calls preconditionFn before setCurNode.
+   * To ensure the clicked node is used for context menu, the node for the
+   * selected block (set by on mouse down event handler) is used instead.
+   *
+   * @returns The current field, connection, or block the cursor is on.
+   */
+  override getCurNode(): ASTNode {
+    const curNode = super.getCurNode();
+    const selected = Blockly.common.getSelected();
+    if (selected?.workspace !== this.workspace) return curNode;
+    const newNode = new ASTNode(ASTNode.types.BLOCK, selected);
+    return newNode;
+  }
+
+  /**
    * Set the location of the cursor and draw it.
    *
    * Overrides normal Marker setCurNode logic to call
