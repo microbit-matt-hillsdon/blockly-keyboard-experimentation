@@ -499,6 +499,7 @@ export class LineCursor extends Marker {
    * this.drawMarker() instead of this.drawer.draw() directly.
    *
    * @param newNode The new location of the cursor.
+   * @param selectionInSync Whether to set selection to match block node.
    */
   override setCurNode(newNode: ASTNode, selectionInSync = false) {
     if (newNode?.getLocation() === this.getCurNode()?.getLocation()) {
