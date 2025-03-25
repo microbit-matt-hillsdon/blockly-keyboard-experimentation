@@ -176,7 +176,8 @@ export class DeleteAction {
     // Delete or backspace.
     // There is an event if this is triggered from a keyboard shortcut,
     // but not if it's triggered from a context menu.
-    if (e) {
+    const shortcutTriggered = !!e;
+    if (shortcutTriggered) {
       // Stop the browser from going back to the previous page.
       // Do this first to prevent an error in the delete code from resulting
       // in data loss.
@@ -187,7 +188,7 @@ export class DeleteAction {
 
     if (cursor instanceof LineCursor) cursor.preDelete(sourceBlock);
     sourceBlock.checkAndDelete();
-    if (cursor instanceof LineCursor) cursor.postDelete();
+    if (cursor instanceof LineCursor) cursor.postDelete(shortcutTriggered);
     return true;
   }
 }

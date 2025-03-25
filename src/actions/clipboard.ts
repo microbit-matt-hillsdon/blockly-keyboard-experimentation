@@ -121,7 +121,7 @@ export class Clipboard {
       callback: (scope) => {
         const ws = scope.block?.workspace;
         if (!ws) return;
-        return this.cutCallback(ws);
+        return this.cutCallback(ws, null);
       },
       scopeType: ContextMenuRegistry.ScopeType.BLOCK,
       id: 'blockCutFromContextMenu',
@@ -164,9 +164,11 @@ export class Clipboard {
    *
    * @param workspace The `WorkspaceSvg` where the shortcut was
    *     invoked.
+   * @param e The originating event for a keyboard shortcut, or null
+   *     if called from a context menu.
    * @returns True if this function successfully handled cutting.
    */
-  private cutCallback(workspace: WorkspaceSvg) {
+  private cutCallback(workspace: WorkspaceSvg, e: Event | null) {
     const cursor = workspace.getCursor();
     if (!cursor) throw new TypeError('no cursor');
     const sourceBlock = cursor
@@ -177,7 +179,10 @@ export class Clipboard {
     this.copyWorkspace = sourceBlock.workspace;
     if (cursor instanceof LineCursor) cursor.preDelete(sourceBlock);
     sourceBlock.checkAndDelete();
-    if (cursor instanceof LineCursor) cursor.postDelete();
+    // There is an event if this is triggered from a keyboard shortcut,
+    // but not if it's triggered from a context menu.
+    const shortcutTriggered = !!e;
+    if (cursor instanceof LineCursor) cursor.postDelete(shortcutTriggered);
     return true;
   }
 

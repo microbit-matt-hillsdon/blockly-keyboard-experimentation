@@ -462,10 +462,11 @@ export class LineCursor extends Marker {
    * Move the cursor to the first valid location in
    * this.potentialNodes, following a block deletion.
    */
-  postDelete() {
+  postDelete(setCursor = true) {
     const nodes = this.potentialNodes;
     this.potentialNodes = null;
     if (!nodes) throw new Error('must call preDelete first');
+    if (!setCursor) return;
     for (const node of nodes) {
       if (this.validNode(node) && !node.getSourceBlock()?.disposed) {
         this.setCurNode(node);
