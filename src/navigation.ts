@@ -202,12 +202,6 @@ export class Navigation {
       return;
     }
     switch (e.type) {
-      case Blockly.Events.DELETE:
-        this.handleBlockDeleteByDrag(
-          workspace,
-          e as Blockly.Events.BlockDelete,
-        );
-        break;
       case Blockly.Events.BLOCK_CHANGE:
         if ((e as Blockly.Events.BlockChange).element === 'mutation') {
           this.handleBlockMutation(workspace, e as Blockly.Events.BlockChange);
@@ -316,42 +310,6 @@ export class Navigation {
       if (block && block.id === mutatedBlockId) {
         cursor.setCurNode(Blockly.ASTNode.createBlockNode(block)!);
       }
-    }
-  }
-
-  /**
-   * Moves the cursor to the workspace when its parent block is deleted by
-   * being dragged to the flyout or to the trashcan.
-   *
-   * @param workspace The workspace the block was on.
-   * @param e The event emitted when a block is deleted.
-   */
-  handleBlockDeleteByDrag(
-    workspace: Blockly.WorkspaceSvg,
-    e: Blockly.Events.BlockDelete,
-  ) {
-    const deletedBlockId = e.blockId;
-    const ids = e.ids ?? [];
-    const cursor = workspace.getCursor();
-
-    // Make sure the cursor is on a block.
-    if (
-      !cursor ||
-      !cursor.getCurNode() ||
-      !cursor.getCurNode()?.getSourceBlock()
-    ) {
-      return;
-    }
-
-    const curNode = cursor.getCurNode();
-    const sourceBlock = curNode?.getSourceBlock()!;
-    if (sourceBlock?.id === deletedBlockId || ids.includes(sourceBlock?.id)) {
-      cursor.setCurNode(
-        Blockly.ASTNode.createWorkspaceNode(
-          workspace,
-          this.WS_COORDINATE_ON_DELETE,
-        )!,
-      );
     }
   }
 
