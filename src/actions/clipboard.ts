@@ -91,7 +91,8 @@ export class Clipboard {
   private registerCutShortcut() {
     const cutShortcut: ShortcutRegistry.KeyboardShortcut = {
       name: Constants.SHORTCUT_NAMES.CUT,
-      preconditionFn: this.cutPrecondition.bind(this),
+      preconditionFn: (workspace: WorkspaceSvg) =>
+        this.cutPrecondition(workspace) && !Gesture.inProgress(),
       callback: this.cutCallback.bind(this),
       keyCodes: [
         createSerializedKey(KeyCodes.X, [KeyCodes.CTRL]),
@@ -186,7 +187,8 @@ export class Clipboard {
   private registerCopyShortcut() {
     const copyShortcut: ShortcutRegistry.KeyboardShortcut = {
       name: Constants.SHORTCUT_NAMES.COPY,
-      preconditionFn: this.copyPrecondition.bind(this),
+      preconditionFn: (workspace: WorkspaceSvg) =>
+        this.copyPrecondition(workspace) && !Gesture.inProgress(),
       callback: this.copyCallback.bind(this),
       keyCodes: [
         createSerializedKey(KeyCodes.C, [KeyCodes.CTRL]),
@@ -289,7 +291,8 @@ export class Clipboard {
   private registerPasteShortcut() {
     const pasteShortcut: ShortcutRegistry.KeyboardShortcut = {
       name: Constants.SHORTCUT_NAMES.PASTE,
-      preconditionFn: this.pastePrecondition.bind(this),
+      preconditionFn: (workspace: WorkspaceSvg) =>
+        this.pastePrecondition(workspace) && !Gesture.inProgress(),
       callback: this.pasteCallback.bind(this),
       keyCodes: [
         createSerializedKey(KeyCodes.V, [KeyCodes.CTRL]),
