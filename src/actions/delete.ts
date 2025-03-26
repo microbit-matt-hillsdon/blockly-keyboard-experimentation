@@ -72,7 +72,8 @@ export class DeleteAction {
   private registerShortcut() {
     const deleteShortcut: ShortcutRegistry.KeyboardShortcut = {
       name: this.deleteShortcutName,
-      preconditionFn: this.deletePrecondition.bind(this),
+      preconditionFn: (workspace: WorkspaceSvg) =>
+        this.deletePrecondition(workspace) && !Gesture.inProgress(),
       callback: this.deleteCallback.bind(this),
       keyCodes: [KeyCodes.DELETE, KeyCodes.BACKSPACE],
       allowCollision: true,
