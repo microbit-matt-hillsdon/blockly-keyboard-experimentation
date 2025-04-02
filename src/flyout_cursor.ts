@@ -10,6 +10,7 @@
  */
 
 import * as Blockly from 'blockly/core';
+import {scrollBoundsIntoView} from './workspace_utilities';
 
 /**
  * Class for a flyout cursor.
@@ -19,8 +20,10 @@ import * as Blockly from 'blockly/core';
 export class FlyoutCursor extends Blockly.Cursor {
   /**
    * The constructor for the FlyoutCursor.
+   *
+   * @param flyout The flyout this cursor is for.
    */
-  constructor() {
+  constructor(private readonly flyout: Blockly.IFlyout) {
     super();
   }
 
@@ -78,6 +81,32 @@ export class FlyoutCursor extends Blockly.Cursor {
    */
   override out(): null {
     return null;
+  }
+
+  override setCurNode(node: Blockly.ASTNode | null) {
+    super.setCurNode(node);
+
+    const location = node?.getLocation();
+    let bounds: Blockly.utils.Rect | undefined;
+    if (
+      location &&
+      'getBoundingRectangle' in location &&
+      typeof location.getBoundingRectangle === 'function'
+    ) {
+      bounds = location.getBoundingRectangle();
+    } else if (location instanceof Blockly.FlyoutButton) {
+      const {x, y} = location.getPosition();
+      bounds = new Blockly.utils.Rect(
+        y,
+        y + location.height,
+        x,
+        x + location.width,
+      );
+    }
+
+    if (!(bounds instanceof Blockly.utils.Rect)) return;
+
+    scrollBoundsIntoView(bounds, this.flyout.getWorkspace());
   }
 }
 

@@ -11,15 +11,10 @@
  */
 
 import './gesture_monkey_patch';
+import './toolbox_monkey_patch';
 
 import * as Blockly from 'blockly/core';
 import {
-  ASTNode,
-  BlockSvg,
-  comments,
-  Connection,
-  ContextMenuRegistry,
-  ICopyData,
   ShortcutRegistry,
   Toolbox,
   utils as BlocklyUtils,
@@ -27,37 +22,79 @@ import {
 } from 'blockly/core';
 
 import * as Constants from './constants';
+import {Clipboard} from './actions/clipboard';
+import {DeleteAction} from './actions/delete';
+import {EditAction} from './actions/edit';
+import {InsertAction} from './actions/insert';
 import {Navigation} from './navigation';
-import {Announcer} from './announcer';
-import {LineCursor} from './line_cursor';
 import {ShortcutDialog} from './shortcut_dialog';
+import {WorkspaceMovement} from './actions/ws_movement';
+import {ArrowNavigation} from './actions/arrow_navigation';
+import {ExitAction} from './actions/exit';
+import {EnterAction} from './actions/enter';
+import {DisconnectAction} from './actions/disconnect';
+import {ActionMenu} from './actions/action_menu';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
-const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
-  ShortcutRegistry.registry,
-);
-
-interface Scope {
-  block?: BlockSvg;
-  workspace?: WorkspaceSvg;
-  comment?: comments.RenderedWorkspaceComment;
-  connection?: Connection;
-}
 
 /**
  * Class for registering shortcuts for keyboard navigation.
  */
 export class NavigationController {
-  /** Data copied by the copy or cut keyboard shortcuts. */
-  copyData: ICopyData | null = null;
+  private navigation: Navigation = new Navigation();
 
-  /** The workspace a copy or cut keyboard shortcut happened in. */
-  copyWorkspace: WorkspaceSvg | null = null;
-  navigation: Navigation = new Navigation();
-  announcer: Announcer = new Announcer();
   shortcutDialog: ShortcutDialog = new ShortcutDialog();
 
-  hasNavigationFocus: boolean = false;
+  /** Context menu and keyboard action for deletion. */
+  deleteAction: DeleteAction = new DeleteAction(
+    this.navigation,
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  /** Context menu and keyboard action for deletion. */
+  editAction: EditAction = new EditAction(this.canCurrentlyEdit.bind(this));
+
+  /** Context menu and keyboard action for insertion. */
+  insertAction: InsertAction = new InsertAction(
+    this.navigation,
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  /** Keyboard shortcut for disconnection. */
+  disconnectAction: DisconnectAction = new DisconnectAction(
+    this.navigation,
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  clipboard: Clipboard = new Clipboard(
+    this.navigation,
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  workspaceMovement: WorkspaceMovement = new WorkspaceMovement(
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  /** Keyboard navigation actions for the arrow keys. */
+  arrowNavigation: ArrowNavigation = new ArrowNavigation(
+    this.navigation,
+    this.canCurrentlyNavigate.bind(this),
+  );
+
+  exitAction: ExitAction = new ExitAction(
+    this.navigation,
+    this.canCurrentlyNavigate.bind(this),
+  );
+
+  enterAction: EnterAction = new EnterAction(
+    this.navigation,
+    this.canCurrentlyEdit.bind(this),
+  );
+
+  actionMenu: ActionMenu = new ActionMenu(
+    this.navigation,
+    this.canCurrentlyNavigate.bind(this),
+  );
 
   /**
    * Original Toolbox.prototype.onShortcut method, saved by
@@ -111,14 +148,18 @@ export class NavigationController {
       return false;
     }
     switch (shortcut.name) {
-      case Constants.SHORTCUT_NAMES.PREVIOUS:
-        return (this as any).selectPrevious_();
-      case Constants.SHORTCUT_NAMES.OUT:
-        return (this as any).selectParent_();
-      case Constants.SHORTCUT_NAMES.NEXT:
-        return (this as any).selectNext_();
-      case Constants.SHORTCUT_NAMES.IN:
-        return (this as any).selectChild_();
+      case Constants.SHORTCUT_NAMES.UP:
+        // @ts-expect-error private method
+        return this.selectPrevious();
+      case Constants.SHORTCUT_NAMES.LEFT:
+        // @ts-expect-error private method
+        return this.selectParent();
+      case Constants.SHORTCUT_NAMES.DOWN:
+        // @ts-expect-error private method
+        return this.selectNext();
+      case Constants.SHORTCUT_NAMES.RIGHT:
+        // @ts-expect-error private method
+        return this.selectChild();
       default:
         return false;
     }
@@ -147,34 +188,65 @@ export class NavigationController {
     this.navigation.removeWorkspace(workspace);
   }
 
-  /**
-   * Sets whether the navigation controller has focus. This will enable keyboard
-   * navigation if focus is now gained. Additionally, the cursor may be reset if
-   * it hasn't already been positioned in the workspace.
-   *
-   * @param workspace the workspace that now has input focus.
-   * @param isFocused whether the environment has browser focus.
-   */
-  setHasFocus(workspace: WorkspaceSvg, isFocused: boolean) {
-    this.hasNavigationFocus = isFocused;
-    if (isFocused) {
-      this.navigation.focusWorkspace(workspace, true);
-    }
+  focusWorkspace(workspace: WorkspaceSvg) {
+    this.navigation.focusWorkspace(workspace);
+  }
+
+  handleFocusWorkspace(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.handleFocusWorkspace(workspace);
+  }
+
+  handleBlurWorkspace(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.handleBlurWorkspace(workspace);
+  }
+
+  handleFocusOutWidgetDropdownDiv(
+    workspace: Blockly.WorkspaceSvg,
+    relatedTarget: EventTarget | null,
+  ) {
+    this.navigation.handleFocusOutWidgetDropdownDiv(workspace, relatedTarget);
+  }
+
+  focusToolbox(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.focusToolbox(workspace);
+  }
+
+  handleFocusToolbox(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.handleFocusToolbox(workspace);
+  }
+
+  handleBlurToolbox(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
+    this.navigation.handleBlurToolbox(workspace, closeFlyout);
+  }
+
+  focusFlyout(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.focusFlyout(workspace);
+  }
+
+  handleFocusFlyout(workspace: Blockly.WorkspaceSvg) {
+    this.navigation.handleFocusFlyout(workspace);
+  }
+
+  handleBlurFlyout(workspace: Blockly.WorkspaceSvg, closeFlyout: boolean) {
+    this.navigation.handleBlurFlyout(workspace, closeFlyout);
   }
 
   /**
    * Determines whether keyboard navigation should be allowed based on the
    * current state of the workspace.
    *
-   * A return value of 'true' generally indicates that the workspace both has
-   * enabled keyboard navigation and is currently in a state (e.g. focus) that
-   * can support keyboard navigation.
+   * A return value of 'true' generally indicates that either the workspace or
+   * toolbox both has enabled keyboard navigation and is currently in a state
+   * (e.g. focus) that can support keyboard navigation.
    *
    * @param workspace the workspace in which keyboard navigation may be allowed.
    * @returns whether keyboard navigation is currently allowed.
    */
   private canCurrentlyNavigate(workspace: WorkspaceSvg) {
-    return workspace.keyboardAccessibilityMode && this.hasNavigationFocus;
+    return (
+      workspace.keyboardAccessibilityMode &&
+      this.navigation.getState(workspace) !== Constants.STATE.NOWHERE
+    );
   }
 
   /**
@@ -211,395 +283,11 @@ export class NavigationController {
   }
 
   /**
-   * Gives the cursor to the field to handle if the cursor is on a field.
-   *
-   * @param workspace The workspace to check.
-   * @param shortcut The shortcut
-   *     to give to the field.
-   * @returns True if the shortcut was handled by the field, false
-   *     otherwise.
-   */
-  protected fieldShortcutHandler(
-    workspace: WorkspaceSvg,
-    shortcut: ShortcutRegistry.KeyboardShortcut,
-  ): boolean {
-    const cursor = workspace.getCursor();
-    if (!cursor || !cursor.getCurNode()) {
-      return false;
-    }
-    const curNode = cursor.getCurNode();
-    if (curNode.getType() === ASTNode.types.FIELD) {
-      return (curNode.getLocation() as Blockly.Field).onShortcut(shortcut);
-    }
-    return false;
-  }
-
-  /**
-   * Precondition function for deleting a block from keyboard
-   * navigation. This precondition is shared between keyboard shortcuts
-   * and context menu items.
-   *
-   * FIXME: This should be better encapsulated.
-   *
-   * @param workspace The `WorkspaceSvg` where the shortcut was
-   *     invoked.
-   * @returns True iff `deleteCallbackFn` function should be called.
-   */
-  protected deletePreconditionFn(workspace: WorkspaceSvg) {
-    if (!this.canCurrentlyEdit(workspace)) return false;
-    const sourceBlock = workspace.getCursor()?.getCurNode().getSourceBlock();
-    return !!sourceBlock?.isDeletable();
-  }
-
-  /**
-   * Callback function for deleting a block from keyboard
-   * navigation. This callback is shared between keyboard shortcuts
-   * and context menu items.
-   *
-   * FIXME: This should be better encapsulated.
-   *
-   * @param workspace The `WorkspaceSvg` where the shortcut was
-   *     invoked.
-   * @param e The originating event for a keyboard shortcut, or null
-   *     if called from a context menu.
-   * @returns True if this function successfully handled deletion.
-   */
-  protected deleteCallbackFn(workspace: WorkspaceSvg, e: Event | null) {
-    const cursor = workspace.getCursor();
-    if (!cursor) return false;
-    const sourceBlock = cursor.getCurNode().getSourceBlock() as BlockSvg;
-    // Delete or backspace.
-    // There is an event if this is triggered from a keyboard shortcut,
-    // but not if it's triggered from a context menu.
-    if (e) {
-      // Stop the browser from going back to the previous page.
-      // Do this first to prevent an error in the delete code from resulting
-      // in data loss.
-      e.preventDefault();
-    }
-    // Don't delete while dragging.  Jeez.
-    if (Blockly.Gesture.inProgress()) false;
-    this.navigation.moveCursorOnBlockDelete(workspace, sourceBlock);
-    sourceBlock.checkAndDelete();
-    return true;
-  }
-
-  /**
-   * Precondition function for copying a block from keyboard
-   * navigation. This precondition is shared between keyboard shortcuts
-   * and context menu items.
-   *
-   * FIXME: This should be better encapsulated.
-   *
-   * @param workspace The `WorkspaceSvg` where the shortcut was
-   *     invoked.
-   * @returns True iff `deleteCallbackFn` function should be called.
-   */
-  protected blockCopyPreconditionFn(workspace: WorkspaceSvg) {
-    if (!this.canCurrentlyEdit(workspace)) return false;
-    switch (this.navigation.getState(workspace)) {
-      case Constants.STATE.WORKSPACE:
-        const curNode = workspace?.getCursor()?.getCurNode();
-        const source = curNode?.getSourceBlock();
-        return !!(
-          source?.isDeletable() &&
-          source?.isMovable() &&
-          !Blockly.Gesture.inProgress()
-        );
-      case Constants.STATE.FLYOUT:
-        const flyoutWorkspace = workspace.getFlyout()?.getWorkspace();
-        const sourceBlock = flyoutWorkspace
-          ?.getCursor()
-          ?.getCurNode()
-          ?.getSourceBlock();
-        return !!(sourceBlock && !Blockly.Gesture.inProgress());
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Callback function for copying a block from keyboard
-   * navigation. This callback is shared between keyboard shortcuts
-   * and context menu items.
-   *
-   * FIXME: This should be better encapsulated.
-   *
-   * @param workspace The `WorkspaceSvg` where the shortcut was
-   *     invoked.
-   * @returns True if this function successfully handled copying.
-   */
-  protected blockCopyCallbackFn(workspace: WorkspaceSvg) {
-    const navigationState = this.navigation.getState(workspace);
-    let activeWorkspace: Blockly.WorkspaceSvg | undefined = workspace;
-    if (navigationState === Constants.STATE.FLYOUT) {
-      activeWorkspace = workspace.getFlyout()?.getWorkspace();
-    }
-    const sourceBlock = activeWorkspace
-      ?.getCursor()
-      ?.getCurNode()
-      .getSourceBlock() as BlockSvg;
-    workspace.hideChaff();
-    this.copyData = sourceBlock.toCopyData();
-    this.copyWorkspace = sourceBlock.workspace;
-    return !!this.copyData;
-  }
-
-  /**
-   * List all the currently registered shortcuts.
-   */
-  listShortcuts() {
-    this.announcer.listShortcuts();
-  }
-
-  /**
    * Dictionary of KeyboardShortcuts.
    */
   protected shortcuts: {
     [name: string]: ShortcutRegistry.KeyboardShortcut;
   } = {
-    /** Go to the previous location. */
-    previous: {
-      name: Constants.SHORTCUT_NAMES.PREVIOUS,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace, _, shortcut) => {
-        const flyout = workspace.getFlyout();
-        const toolbox = workspace.getToolbox() as Blockly.Toolbox;
-        let isHandled = false;
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled) {
-              workspace.getCursor()?.prev();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.FLYOUT:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled && flyout) {
-              flyout.getWorkspace()?.getCursor()?.prev();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.TOOLBOX:
-            return toolbox && typeof toolbox.onShortcut === 'function'
-              ? toolbox.onShortcut(shortcut)
-              : false;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.UP],
-    },
-
-    /** Turn keyboard navigation on or off. */
-    toggleKeyboardNav: {
-      name: Constants.SHORTCUT_NAMES.TOGGLE_KEYBOARD_NAV,
-      callback: (workspace) => {
-        if (workspace.keyboardAccessibilityMode) {
-          this.navigation.disableKeyboardAccessibility(workspace);
-        } else {
-          this.navigation.enableKeyboardAccessibility(workspace);
-        }
-        return true;
-      },
-      keyCodes: [
-        createSerializedKey(KeyCodes.K, [KeyCodes.CTRL, KeyCodes.SHIFT]),
-      ],
-    },
-
-    /** Go to the out location. */
-    out: {
-      name: Constants.SHORTCUT_NAMES.OUT,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace, _, shortcut) => {
-        const toolbox = workspace.getToolbox() as Blockly.Toolbox;
-        let isHandled = false;
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled && workspace) {
-              workspace.getCursor()?.out();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.FLYOUT:
-            this.navigation.focusToolbox(workspace);
-            return true;
-          case Constants.STATE.TOOLBOX:
-            return toolbox && typeof toolbox.onShortcut === 'function'
-              ? toolbox.onShortcut(shortcut)
-              : false;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.LEFT],
-    },
-
-    /** Go to the next location. */
-    next: {
-      name: Constants.SHORTCUT_NAMES.NEXT,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace, _, shortcut) => {
-        const toolbox = workspace.getToolbox() as Blockly.Toolbox;
-        const flyout = workspace.getFlyout();
-        let isHandled = false;
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled && workspace) {
-              workspace.getCursor()?.next();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.FLYOUT:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled && flyout) {
-              flyout.getWorkspace()?.getCursor()?.next();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.TOOLBOX:
-            return toolbox && typeof toolbox.onShortcut === 'function'
-              ? toolbox.onShortcut(shortcut)
-              : false;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.DOWN],
-    },
-
-    /** Go to the in location. */
-    in: {
-      name: Constants.SHORTCUT_NAMES.IN,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace, _, shortcut) => {
-        const toolbox = workspace.getToolbox() as Blockly.Toolbox;
-        let isHandled = false;
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            isHandled = this.fieldShortcutHandler(workspace, shortcut);
-            if (!isHandled && workspace) {
-              workspace.getCursor()?.in();
-              isHandled = true;
-            }
-            return isHandled;
-          case Constants.STATE.TOOLBOX:
-            isHandled =
-              toolbox && typeof toolbox.onShortcut === 'function'
-                ? toolbox.onShortcut(shortcut)
-                : false;
-            if (!isHandled) {
-              this.navigation.focusFlyout(workspace);
-            }
-            return true;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.RIGHT],
-    },
-
-    /** Connect a block to a marked location. */
-    insert: {
-      name: Constants.SHORTCUT_NAMES.INSERT,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            return this.navigation.connectMarkerAndCursor(workspace);
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.I],
-    },
-
-    /**
-     * Enter key:
-     *
-     * - On the flyout: press a button or choose a block to place.
-     * - On a stack: open a block's context menu or field's editor.
-     * - On the workspace: open the context menu.
-     */
-    enter: {
-      name: Constants.SHORTCUT_NAMES.MARK, // FIXME
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        let flyoutCursor;
-        let curNode;
-        let nodeType;
-
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            this.navigation.handleEnterForWS(workspace);
-            return true;
-          case Constants.STATE.FLYOUT:
-            flyoutCursor = this.navigation.getFlyoutCursor(workspace);
-            if (!flyoutCursor) {
-              return false;
-            }
-            curNode = flyoutCursor.getCurNode();
-            nodeType = curNode.getType();
-
-            switch (nodeType) {
-              case ASTNode.types.STACK:
-                this.navigation.insertFromFlyout(workspace);
-                break;
-              case ASTNode.types.BUTTON:
-                this.navigation.triggerButtonCallback(workspace);
-                break;
-            }
-
-            return true;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.ENTER],
-    },
-
-    /**
-     * Cmd/Ctrl/Alt+Enter key:
-     *
-     * Shows the action menu.
-     */
-    menu: {
-      name: Constants.SHORTCUT_NAMES.MENU,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace) => {
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            return this.navigation.openActionMenu(workspace);
-          default:
-            return false;
-        }
-      },
-      keyCodes: [
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.CTRL]),
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.ALT]),
-        createSerializedKey(KeyCodes.ENTER, [KeyCodes.META]),
-      ],
-    },
-
-    /** Disconnect two blocks. */
-    disconnect: {
-      name: Constants.SHORTCUT_NAMES.DISCONNECT,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.WORKSPACE:
-            this.navigation.disconnectBlocks(workspace);
-            return true;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.X],
-    },
-
     /** Move focus to or from the toolbox. */
     focusToolbox: {
       name: Constants.SHORTCUT_NAMES.TOOLBOX,
@@ -620,402 +308,17 @@ export class NavigationController {
       keyCodes: [KeyCodes.T],
     },
 
-    /** Exit the current location and focus on the workspace. */
-    exit: {
-      name: Constants.SHORTCUT_NAMES.EXIT,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace) => {
-        switch (this.navigation.getState(workspace)) {
-          case Constants.STATE.FLYOUT:
-            this.navigation.focusWorkspace(workspace);
-            return true;
-          case Constants.STATE.TOOLBOX:
-            this.navigation.focusWorkspace(workspace);
-            return true;
-          default:
-            return false;
-        }
-      },
-      keyCodes: [KeyCodes.ESC, KeyCodes.E],
-      allowCollision: true,
-    },
-
-    /** Move the cursor on the workspace to the left. */
-    wsMoveLeft: {
-      name: Constants.SHORTCUT_NAMES.MOVE_WS_CURSOR_LEFT,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        return this.navigation.moveWSCursor(workspace, -1, 0);
-      },
-      keyCodes: [createSerializedKey(KeyCodes.A, [KeyCodes.SHIFT])],
-    },
-
-    /** Move the cursor on the workspace to the right. */
-    wsMoveRight: {
-      name: Constants.SHORTCUT_NAMES.MOVE_WS_CURSOR_RIGHT,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        return this.navigation.moveWSCursor(workspace, 1, 0);
-      },
-      keyCodes: [createSerializedKey(KeyCodes.D, [KeyCodes.SHIFT])],
-    },
-
-    /** Move the cursor on the workspace up. */
-    wsMoveUp: {
-      name: Constants.SHORTCUT_NAMES.MOVE_WS_CURSOR_UP,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        return this.navigation.moveWSCursor(workspace, 0, -1);
-      },
-      keyCodes: [createSerializedKey(KeyCodes.W, [KeyCodes.SHIFT])],
-    },
-
-    /** Move the cursor on the workspace down. */
-    wsMoveDown: {
-      name: Constants.SHORTCUT_NAMES.MOVE_WS_CURSOR_DOWN,
-      preconditionFn: (workspace) => this.canCurrentlyEdit(workspace),
-      callback: (workspace) => {
-        return this.navigation.moveWSCursor(workspace, 0, 1);
-      },
-      keyCodes: [createSerializedKey(KeyCodes.S, [KeyCodes.SHIFT])],
-    },
-
-    /** Copy the block the cursor is currently on. */
-    copy: {
-      name: Constants.SHORTCUT_NAMES.COPY,
-      preconditionFn: this.blockCopyPreconditionFn.bind(this),
-      callback: this.blockCopyCallbackFn.bind(this),
-      keyCodes: [
-        createSerializedKey(KeyCodes.C, [KeyCodes.CTRL]),
-        createSerializedKey(KeyCodes.C, [KeyCodes.ALT]),
-        createSerializedKey(KeyCodes.C, [KeyCodes.META]),
-      ],
-      allowCollision: true,
-    },
-
-    /**
-     * Paste the copied block, to the marked location if possible or
-     * onto the workspace otherwise.
-     */
-    paste: {
-      name: Constants.SHORTCUT_NAMES.PASTE,
-      preconditionFn: (workspace) =>
-        this.canCurrentlyEdit(workspace) && !Blockly.Gesture.inProgress(),
-      callback: (workspace) => {
-        if (!this.copyData || !this.copyWorkspace) return false;
-        const pasteWorkspace = this.copyWorkspace.isFlyout
-          ? workspace
-          : this.copyWorkspace;
-        return this.navigation.paste(this.copyData, pasteWorkspace);
-      },
-      keyCodes: [
-        createSerializedKey(KeyCodes.V, [KeyCodes.CTRL]),
-        createSerializedKey(KeyCodes.V, [KeyCodes.ALT]),
-        createSerializedKey(KeyCodes.V, [KeyCodes.META]),
-      ],
-      allowCollision: true,
-    },
-
-    /** Copy and delete the block the cursor is currently on. */
-    cut: {
-      name: Constants.SHORTCUT_NAMES.CUT,
-      preconditionFn: (workspace) => {
-        if (this.canCurrentlyEdit(workspace)) {
-          const curNode = workspace.getCursor()?.getCurNode();
-          if (curNode && curNode.getSourceBlock()) {
-            const sourceBlock = curNode.getSourceBlock();
-            return !!(
-              !Blockly.Gesture.inProgress() &&
-              sourceBlock &&
-              sourceBlock.isDeletable() &&
-              sourceBlock.isMovable() &&
-              !sourceBlock.workspace.isFlyout
-            );
-          }
-        }
-        return false;
-      },
-      callback: (workspace) => {
-        const sourceBlock = workspace
-          .getCursor()
-          ?.getCurNode()
-          .getSourceBlock() as BlockSvg;
-        this.copyData = sourceBlock.toCopyData();
-        this.copyWorkspace = sourceBlock.workspace;
-        this.navigation.moveCursorOnBlockDelete(workspace, sourceBlock);
-        sourceBlock.checkAndDelete();
-        return true;
-      },
-      keyCodes: [
-        createSerializedKey(KeyCodes.X, [KeyCodes.CTRL]),
-        createSerializedKey(KeyCodes.X, [KeyCodes.ALT]),
-        createSerializedKey(KeyCodes.X, [KeyCodes.META]),
-      ],
-      allowCollision: true,
-    },
-
-    /** Keyboard shortcut to delete the block the cursor is currently on. */
-    delete: {
-      name: Constants.SHORTCUT_NAMES.DELETE,
-      preconditionFn: this.deletePreconditionFn.bind(this),
-      callback: this.deleteCallbackFn.bind(this),
-      keyCodes: [KeyCodes.DELETE, KeyCodes.BACKSPACE],
-      allowCollision: true,
-    },
-
-    /** List all of the currently registered shortcuts. */
-    announceShortcuts: {
-      name: Constants.SHORTCUT_NAMES.LIST_SHORTCUTS,
-      callback: () => {
-        this.shortcutDialog.toggle();
-        return true;
-      },
-      keyCodes: [KeyCodes.SLASH],
-    },
-
-    /** Announce the current location of the cursor. */
-    announceLocation: {
-      name: Constants.SHORTCUT_NAMES.ANNOUNCE,
-      callback: (workspace) => {
-        const cursor = workspace.getCursor();
-        if (!cursor) return false;
-        // Print out the type of the current node.
-        this.announcer.setText(cursor.getCurNode().getType());
-        return true;
-      },
-      keyCodes: [KeyCodes.A],
-    },
-
-    /** Go to the next sibling of the cursor's current location. */
-    nextSibling: {
-      name: Constants.SHORTCUT_NAMES.GO_TO_NEXT_SIBLING,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      // Jump to the next node at the same level, when in the workspace.
-      callback: (workspace, e, shortcut) => {
-        const cursor = workspace.getCursor() as LineCursor;
-
-        if (this.navigation.getState(workspace) === Constants.STATE.WORKSPACE) {
-          if (this.fieldShortcutHandler(workspace, shortcut)) {
-            this.announcer.setText('next sibling (handled by field)');
-            return true;
-          }
-          if (cursor.nextSibling()) {
-            this.announcer.setText('next sibling (success)');
-            return true;
-          }
-        }
-        this.announcer.setText('next sibling (no-op)');
-        return false;
-      },
-      keyCodes: [KeyCodes.N],
-    },
-
-    /** Go to the previous sibling of the cursor's current location. */
-    previousSibling: {
-      name: Constants.SHORTCUT_NAMES.GO_TO_PREVIOUS_SIBLING,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      // Jump to the previous node at the same level, when in the workspace.
-      callback: (workspace, e, shortcut) => {
-        const cursor = workspace.getCursor() as LineCursor;
-
-        if (this.navigation.getState(workspace) === Constants.STATE.WORKSPACE) {
-          if (this.fieldShortcutHandler(workspace, shortcut)) {
-            this.announcer.setText('previous sibling (handled by field)');
-            return true;
-          }
-          if (cursor.previousSibling()) {
-            this.announcer.setText('previous sibling (success)');
-            return true;
-          }
-        }
-        this.announcer.setText('previous sibling (no-op)');
-        return false;
-      },
-      keyCodes: [KeyCodes.M],
-    },
-
-    /** Jump to the root of the current stack. */
-    jumpToRoot: {
-      name: Constants.SHORTCUT_NAMES.JUMP_TO_ROOT,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      // Jump to the root of the current stack.
-      callback: (workspace) => {
-        const cursor = workspace.getCursor();
-        if (!cursor) return false;
-        const curNode = cursor.getCurNode();
-        const curBlock = curNode.getSourceBlock();
-        if (curBlock) {
-          const rootBlock = curBlock.getRootBlock();
-          const stackNode = ASTNode.createStackNode(rootBlock) as ASTNode;
-          cursor.setCurNode(stackNode);
-          this.announcer.setText('jumped to root');
-          return true;
-        }
-        this.announcer.setText('could not jump to root');
-        return false;
-      },
-      keyCodes: [KeyCodes.R],
-    },
-
-    /** Move the cursor out of its current context, such as a loop block. */
-    contextOut: {
-      name: Constants.SHORTCUT_NAMES.CONTEXT_OUT,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      callback: (workspace) => {
-        if (this.navigation.getState(workspace) === Constants.STATE.WORKSPACE) {
-          this.announcer.setText('context out');
-          const cursor = workspace.getCursor() as LineCursor;
-          if (cursor.contextOut()) {
-            return true;
-          }
-        }
-        this.announcer.setText('context out (no-op)');
-        return false;
-      },
-      keyCodes: [createSerializedKey(KeyCodes.O, [KeyCodes.SHIFT])],
-    },
-
-    /** Move the cursor in a level of context, such as into a loop. */
-    contextIn: {
-      name: Constants.SHORTCUT_NAMES.CONTEXT_IN,
-      preconditionFn: (workspace) => this.canCurrentlyNavigate(workspace),
-      // Print out the type of the current node.
-      callback: (workspace) => {
-        if (this.navigation.getState(workspace) === Constants.STATE.WORKSPACE) {
-          const cursor = workspace.getCursor() as LineCursor;
-          if (cursor.contextIn()) {
-            this.announcer.setText('context in');
-            return true;
-          }
-        }
-        this.announcer.setText('context in (no-op)');
-        return false;
-      },
-      keyCodes: [createSerializedKey(KeyCodes.I, [KeyCodes.SHIFT])],
-    },
-
     /** Clean up the workspace. */
     cleanup: {
       name: Constants.SHORTCUT_NAMES.CLEAN_UP,
       preconditionFn: (workspace) => workspace.getTopBlocks(false).length > 0,
       callback: (workspace) => {
         workspace.cleanUp();
-        this.announcer.setText('clean up');
         return true;
       },
       keyCodes: [KeyCodes.C],
     },
   };
-
-  /**
-   * Register the delete block action as a context menu item on blocks.
-   * This function mixes together the keyboard and context menu preconditions
-   * but only calls the keyboard callback.
-   */
-  protected registerDeleteAction() {
-    const originalDeleteItem =
-      ContextMenuRegistry.registry.getItem('blockDelete');
-    if (!originalDeleteItem) return;
-
-    const deleteItem: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => {
-        // FIXME: Consider using the original delete item's display text,
-        // which is dynamic based on the nubmer of blocks to delete.
-        return 'Keyboard Navigation: delete';
-      },
-      preconditionFn: (scope) => {
-        // FIXME: Find a better way to get the workspace, or use `as WorkspaceSvg`.
-        const ws = scope.block?.workspace;
-
-        // Run the original precondition code, from the context menu option.
-        // If the item would be hidden or disabled, respect it.
-        const originalPreconditionResult =
-          originalDeleteItem.preconditionFn(scope);
-        if (!ws || originalPreconditionResult != 'enabled') {
-          return originalPreconditionResult;
-        }
-
-        // Return enabled if the keyboard shortcut precondition is allowed,
-        // and disabled if the context menu precondition is met but the keyboard
-        // shortcut precondition is not met.
-        return this.deletePreconditionFn(ws) ? 'enabled' : 'disabled';
-      },
-      callback: (scope) => {
-        // FIXME: Find a better way to get the workspace, or use `as WorkspaceSvg`.
-        const ws = scope.block?.workspace;
-        if (!ws) return;
-
-        // Delete the block(s), and put the cursor back in a sane location.
-        return this.deleteCallbackFn(ws, null);
-      },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'blockDeleteFromContextMenu',
-      weight: 10,
-    };
-
-    // FIXME: Decide whether to unregister the original item.
-    ContextMenuRegistry.registry.register(deleteItem);
-  }
-
-  /**
-   * Register the block copy action as a context menu item on blocks.
-   */
-  protected registerCopyAction() {
-    const copyAction: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope) => 'Keyboard Navigation: copy',
-      preconditionFn: (scope) => {
-        const ws = scope.block?.workspace;
-        if (!ws) return 'hidden';
-
-        return this.blockCopyPreconditionFn(ws) ? 'enabled' : 'disabled';
-      },
-      callback: (scope) => {
-        const ws = scope.block?.workspace;
-        if (!ws) return;
-        return this.blockCopyCallbackFn(ws);
-      },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'blockCopyFromContextMenu',
-      weight: 11,
-    };
-
-    ContextMenuRegistry.registry.register(copyAction);
-  }
-
-  /**
-   * Register the action for inserting above a block.
-   */
-  protected registerInsertAction() {
-    const insertAboveAction: ContextMenuRegistry.RegistryItem = {
-      displayText: (scope: Scope) =>
-        scope.block
-          ? 'Insert block above'
-          : scope.connection
-            ? 'Insert block here'
-            : 'Insert',
-      preconditionFn: (scope: Scope) => {
-        const block = scope.block ?? scope.connection?.getSourceBlock();
-        const ws = block?.workspace as WorkspaceSvg | null;
-        if (!ws) return 'hidden';
-
-        return this.canCurrentlyEdit(ws) ? 'enabled' : 'hidden';
-      },
-      callback: (scope) => {
-        const ws = scope.block?.workspace;
-        if (!ws) return false;
-
-        if (this.navigation.getState(ws) === Constants.STATE.WORKSPACE) {
-          this.navigation.openToolboxOrFlyout(ws);
-          return true;
-        }
-        return false;
-      },
-      scopeType: ContextMenuRegistry.ScopeType.BLOCK,
-      id: 'insert',
-      weight: 12,
-    };
-    ContextMenuRegistry.registry.register(insertAboveAction);
-  }
 
   /**
    * Registers all default keyboard shortcut items for keyboard
@@ -1026,12 +329,20 @@ export class NavigationController {
     for (const shortcut of Object.values(this.shortcuts)) {
       ShortcutRegistry.registry.register(shortcut);
     }
+    this.deleteAction.install();
+    this.editAction.install();
+    this.insertAction.install();
+    this.workspaceMovement.install();
+    this.arrowNavigation.install();
+    this.exitAction.install();
+    this.enterAction.install();
+    this.disconnectAction.install();
+    this.actionMenu.install();
 
-    this.registerDeleteAction();
-    this.registerCopyAction();
-    this.registerInsertAction();
+    this.clipboard.install();
+    this.shortcutDialog.install();
 
-    // Initalise the shortcut modal with available shortcuts.  Needs
+    // Initialize the shortcut modal with available shortcuts.  Needs
     // to be done separately rather at construction, as many shortcuts
     // are not registered at that point.
     this.shortcutDialog.createModalContent();
@@ -1045,8 +356,17 @@ export class NavigationController {
       ShortcutRegistry.registry.unregister(shortcut.name);
     }
 
-    ContextMenuRegistry.registry.unregister('blockDeleteFromContextMenu');
-    ContextMenuRegistry.registry.unregister('blockCopyFromContextMenu');
+    this.deleteAction.uninstall();
+    this.editAction.uninstall();
+    this.insertAction.uninstall();
+    this.disconnectAction.uninstall();
+    this.clipboard.uninstall();
+    this.workspaceMovement.uninstall();
+    this.arrowNavigation.uninstall();
+    this.exitAction.uninstall();
+    this.enterAction.uninstall();
+    this.actionMenu.uninstall();
+    this.shortcutDialog.uninstall();
 
     this.removeShortcutHandlers();
     this.navigation.dispose();
