@@ -6,6 +6,7 @@
 
 import {
   ASTNode,
+  Events,
   ShortcutRegistry,
   utils as BlocklyUtils,
   dialog,
@@ -126,27 +127,23 @@ export class EnterAction {
    *     the block will be placed on.
    */
   private insertFromFlyout(workspace: WorkspaceSvg) {
+    workspace.setResizesEnabled(false);
+    Events.setGroup(true);
+
     const stationaryNode = this.navigation.getStationaryNode(workspace);
     const newBlock = this.createNewBlock(workspace);
     if (!newBlock) return;
     if (stationaryNode) {
-      if (
-        !this.navigation.tryToConnectNodes(
-          workspace,
-          stationaryNode,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ASTNode.createBlockNode(newBlock)!,
-        )
-      ) {
+      if (!this.navigation.tryToConnectBlock(stationaryNode, newBlock)) {
         console.warn(
           'Something went wrong while inserting a block from the flyout.',
         );
       }
     }
 
-    const topBlocks = workspace.getTopBlocks(true);
-    if (topBlocks.findIndex((block) => block.id === newBlock.id) !== -1) {
+    if (workspace.getTopBlocks().includes(newBlock)) {
       this.positionNewTopLevelBlock(workspace, newBlock);
+      console.log(ASTNode.createTopNode(newBlock));
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       workspace.getCursor()?.setCurNode(ASTNode.createTopNode(newBlock)!);
     } else {
@@ -154,14 +151,17 @@ export class EnterAction {
       workspace.getCursor()?.setCurNode(ASTNode.createBlockNode(newBlock)!);
     }
 
+    Events.setGroup(false);
+    workspace.setResizesEnabled(true);
+
     this.navigation.focusWorkspace(workspace);
   }
 
   /**
-   * Position a new top-level block in 2D space.
+   * Position a new top-level block to avoid overlap at the top left.
    *
    * Similar to `WorkspaceSvg.cleanUp()` but does not constrain itself to not
-   * affecting code ordering.
+   * affecting code ordering in order to use horizontal space.
    *
    * @param workspace The workspace.
    * @param newBlock The top-level block to move to free space.
@@ -170,8 +170,6 @@ export class EnterAction {
     workspace: WorkspaceSvg,
     newBlock: BlockSvg,
   ) {
-    workspace.setResizesEnabled(false);
-
     const initialY = 10;
     const initialX = 10;
 
@@ -238,7 +236,6 @@ export class EnterAction {
     }
 
     newBlock.bringToFront();
-    workspace.setResizesEnabled(true);
   }
 
   /**
