@@ -8,26 +8,23 @@ import * as Blockly from 'blockly/core';
 import * as Constants from './constants';
 import {ShortcutRegistry} from 'blockly/core';
 import {keyCodeArrayToString, toTitleCase} from './keynames';
+import {Navigation} from './navigation';
 
 /**
  * Class for handling the shortcuts dialog.
  */
 export class ShortcutDialog {
   outputDiv: HTMLElement | null;
-  modalContainer: HTMLElement | null;
-  shortcutDialog: HTMLDialogElement | null;
+  shortcutDialog: HTMLElement | null;
   open: boolean;
   closeButton: HTMLElement | null;
-  /**
-   * Constructor for a dialog that displays available keyboard shortcuts.
-   */
-  constructor() {
+
+  constructor(private navigation: Navigation) {
     // For testing purposes, this assumes that the page has a
     // div named 'shortcuts'.
     this.outputDiv = document.getElementById('shortcuts');
 
     this.open = false;
-    this.modalContainer = null;
     this.shortcutDialog = null;
     this.closeButton = null;
   }
@@ -76,12 +73,15 @@ export class ShortcutDialog {
   }
 
   toggle() {
-    if (this.modalContainer && this.shortcutDialog) {
-      // Use built in dialog methods.
-      if (this.shortcutDialog.hasAttribute('open')) {
-        this.shortcutDialog.close();
+    if (this.shortcutDialog) {
+      const workspace = Blockly.getMainWorkspace() as Blockly.WorkspaceSvg;
+      // Use class to show/hide shortcut sidebar and update focus.
+      if (this.shortcutDialog.className.includes('hide')) {
+        this.shortcutDialog.className = 'shortcut-modal';
+        this.shortcutDialog.focus();
       } else {
-        this.shortcutDialog.showModal();
+        this.shortcutDialog.className += ' hide';
+        this.navigation.focusWorkspace(workspace);
       }
     }
   }
@@ -100,14 +100,13 @@ export class ShortcutDialog {
    * List all currently registered shortcuts as a table.
    */
   createModalContent() {
-    let modalContents = `<div class="modal-container">
-      <dialog class="shortcut-modal">
-        <div class="shortcut-container" tabindex="0">
+    let modalContents = `
+      <aside class="shortcut-modal hide" tabindex="0">
           <div class="header">
+            <h1>Keyboard shortcuts – <span class="platform">Windows</span></h1>
             <button class="close-modal">
               <span class="material-symbols-outlined">close</span>
             </button>
-            <h1>Keyboard shortcuts – <span class="platform">Windows</span></h1>
           </div>
           <div class="shortcut-tables">`;
 
@@ -123,6 +122,18 @@ export class ShortcutDialog {
           `;
 
       for (const keyboardShortcut of categoryShortcuts) {
+        if (keyboardShortcut === Constants.SHORTCUT_NAMES.CODE_NAVIGATION) {
+          const navigationKeys = [
+            Blockly.utils.KeyCodes.UP,
+            Blockly.utils.KeyCodes.DOWN,
+            Blockly.utils.KeyCodes.RIGHT,
+            Blockly.utils.KeyCodes.LEFT,
+          ].map((key) => `${key}`);
+          modalContents += `
+          <td>${this.getReadableShortcutName(keyboardShortcut)}</td>
+          <td>${keyCodeArrayToString(navigationKeys)}</td>
+          </tr>`;
+        }
         const codeArray =
           ShortcutRegistry.registry.getKeyCodesByShortcutName(keyboardShortcut);
         if (codeArray.length > 0) {
@@ -141,12 +152,7 @@ export class ShortcutDialog {
       modalContents += '</tr></tbody></table>';
     }
     if (this.outputDiv) {
-      this.outputDiv.innerHTML =
-        modalContents +
-        `</div>
-      </dialog>
-    </div>`;
-      this.modalContainer = this.outputDiv.querySelector('.modal-container');
+      this.outputDiv.innerHTML = modalContents + '</aside>';
       this.shortcutDialog = this.outputDiv.querySelector('.shortcut-modal');
       this.closeButton = this.outputDiv.querySelector('.close-modal');
       this.updatePlatformModifier();
@@ -197,31 +203,30 @@ Blockly.Css.register(`
 }
 
 .shortcut-modal {
-  border: 1px solid var(--shortcut-modal-border-color);
-  border-radius: 12px;
+  background: white;
   box-shadow: 6px 6px 32px rgba(0,0,0,.5);
-  flex-direction: column;
-  gap: 12px;
-  margin: auto;
-  max-height: 82vh;
-  max-width: calc(100% - 10em);
-  padding: 24px 12px 24px 32px;
-  position: relative;
   z-index: 99;
+  position: relative;
+  height: 100%;
+  font-size: 0.95em;
+  overflow-x: hidden;
+  padding-left: 1em;
 }
 
-.shortcut-modal[open] {
+.shortcut-modal.hide {
+  display: none;
+}
+
+.shortcut-modal .header {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .shortcut-modal .close-modal {
   border: 0;
   background: transparent;
-  float: inline-end;
-  margin: 0 0 0 0;
-  position: absolute;
-  top: 16px;
-  right: 24px;
+  cursor: pointer;
 }
 
 .shortcut-modal h1 {
@@ -252,13 +257,13 @@ Blockly.Css.register(`
 
 @media (min-width: 950px) {
   .shortcut-tables {
-    grid-template-columns: 1fr 1fr
+    grid-template-columns: 1fr
   }
 }
 
 @media (min-width: 1360px) {
   .shortcut-tables {
-    grid-template-columns: 1fr 1fr 1fr
+    grid-template-columns: 1fr
   }
 }
 
@@ -276,7 +281,6 @@ Blockly.Css.register(`
 }
 
 .shortcut-table td:first-child {
-  text-wrap: auto;
   width: 40%;
 }
 
@@ -314,12 +318,6 @@ Blockly.Css.register(`
   color: gray;
   display: inline-block;
   padding: 0 0.5em;
-}
-
-.shortcut-container {
-  font-size: 0.95em;
-  overflow: auto;
-  padding: 0.5em;
 }
 
 .shortcut-combo {

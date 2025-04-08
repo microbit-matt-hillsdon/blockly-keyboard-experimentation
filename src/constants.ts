@@ -27,6 +27,7 @@ export enum STATE {
  * Default keyboard navigation shortcut names.
  */
 export enum SHORTCUT_NAMES {
+  CODE_NAVIGATION = 'code_navigation',
   UP = 'up',
   DOWN = 'down',
   RIGHT = 'right',
@@ -72,6 +73,7 @@ export const SHORTCUT_CATEGORIES: Record<
   Array<SHORTCUT_NAMES | 'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'delete'>
 > = {
   'General': [
+    SHORTCUT_NAMES.CODE_NAVIGATION,
     SHORTCUT_NAMES.MENU,
     SHORTCUT_NAMES.EDIT_OR_CONFIRM,
     SHORTCUT_NAMES.EXIT,
@@ -88,11 +90,5 @@ export const SHORTCUT_CATEGORIES: Record<
     'paste',
     'undo',
     'redo',
-  ],
-  'Code navigation': [
-    SHORTCUT_NAMES.UP,
-    SHORTCUT_NAMES.DOWN,
-    SHORTCUT_NAMES.RIGHT,
-    SHORTCUT_NAMES.LEFT,
   ],
 };

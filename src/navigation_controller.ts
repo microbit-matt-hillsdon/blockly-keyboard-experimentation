@@ -47,7 +47,7 @@ export class NavigationController {
 
   private mover = new Mover(this.navigation);
 
-  shortcutDialog: ShortcutDialog = new ShortcutDialog();
+  shortcutDialog: ShortcutDialog = new ShortcutDialog(this.navigation);
 
   /** Context menu and keyboard action for deletion. */
   deleteAction: DeleteAction = new DeleteAction(this.navigation);
