@@ -9,7 +9,6 @@ import {
   Events,
   ShortcutRegistry,
   utils as BlocklyUtils,
-  dialog,
 } from 'blockly/core';
 
 import type {
@@ -24,6 +23,7 @@ import * as Constants from '../constants';
 import type {Navigation} from '../navigation';
 import {formatActionShortcut} from '../shortcut_formatting';
 import {Mover} from './mover';
+import {toast} from '../toast';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
@@ -106,7 +106,7 @@ export class EnterAction {
       if (!this.tryShowFullBlockFieldEditor(block)) {
         const shortcut = formatActionShortcut('list_shortcuts', 'short');
         const message = `Press ${shortcut} for help on keyboard controls`;
-        dialog.alert(message);
+        toast(workspace, {message});
       }
     } else if (curNode.isConnection() || nodeType === ASTNode.types.WORKSPACE) {
       this.navigation.openToolboxOrFlyout(workspace);
