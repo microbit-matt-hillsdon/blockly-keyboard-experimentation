@@ -150,17 +150,25 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
     const dir = this.currentDragDirection;
     while (potential && !candidateConnection) {
       if (dir === Direction.Up || dir === Direction.Left) {
-        potential = cursor.getPreviousNode(potential, (node) => {
-          // @ts-expect-error isConnectionType is private.
-          return node && ASTNode.isConnectionType(node.getType());
+        potential = cursor.getPreviousNode(
+          potential,
+          (node) => {
+            // @ts-expect-error isConnectionType is private.
+            return node && ASTNode.isConnectionType(node.getType());
+          },
           // @ts-expect-error due to hacky patch
-        }, false);
+          false,
+        );
       } else if (dir === Direction.Down || dir === Direction.Right) {
-        potential = cursor.getNextNode(potential, (node) => {
-          // @ts-expect-error isConnectionType is private.
-          return node && ASTNode.isConnectionType(node.getType());
+        potential = cursor.getNextNode(
+          potential,
+          (node) => {
+            // @ts-expect-error isConnectionType is private.
+            return node && ASTNode.isConnectionType(node.getType());
+          },
           // @ts-expect-error due to hacky patch
-        }, false);
+          false,
+        );
       }
 
       localConns.forEach((conn: RenderedConnection) => {

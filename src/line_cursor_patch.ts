@@ -8,32 +8,33 @@ import * as Blockly from 'blockly/core';
 
 export const applyLineCursorPatch = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (Blockly.LineCursor.prototype as any).getLastNode = function (): Blockly.ASTNode | null {
-    const topBlocks = this.workspace.getTopBlocks(true);
-    if (topBlocks.length === 0) {
-      return null;
-    }
-    const lastTopBlockNode = Blockly.ASTNode.createTopNode(
-      topBlocks[topBlocks.length - 1],
-    );
-    let prevNode = lastTopBlockNode;
-    let nextNode: Blockly.ASTNode | null = lastTopBlockNode;
-    while (nextNode) {
-      prevNode = nextNode;
-      nextNode = this.getNextNode(
-        prevNode,
-        this.validLineNode.bind(this),
-        false,
+  (Blockly.LineCursor.prototype as any).getLastNode =
+    function (): Blockly.ASTNode | null {
+      const topBlocks = this.workspace.getTopBlocks(true);
+      if (topBlocks.length === 0) {
+        return null;
+      }
+      const lastTopBlockNode = Blockly.ASTNode.createTopNode(
+        topBlocks[topBlocks.length - 1],
       );
-    }
-    return prevNode;
-  }
+      let prevNode = lastTopBlockNode;
+      let nextNode: Blockly.ASTNode | null = lastTopBlockNode;
+      while (nextNode) {
+        prevNode = nextNode;
+        nextNode = this.getNextNode(
+          prevNode,
+          this.validLineNode.bind(this),
+          false,
+        );
+      }
+      return prevNode;
+    };
 
   Blockly.LineCursor.prototype.getPreviousNode = function (
     node: Blockly.ASTNode | null,
     isValid: (p1: Blockly.ASTNode | null) => boolean,
-    loop = true
-  ):  Blockly.ASTNode | null {
+    loop = true,
+  ): Blockly.ASTNode | null {
     if (!node) {
       return null;
     }
@@ -45,7 +46,7 @@ export const applyLineCursorPatch = () => {
     } else {
       newNode = node.out();
     }
-    if (isValid(newNode)) {
+    if (newNode?.getType() !== Blockly.ASTNode.types.NEXT && isValid(newNode)) {
       return newNode;
     } else if (newNode) {
       // @ts-expect-error due to hacky patch
@@ -57,13 +58,13 @@ export const applyLineCursorPatch = () => {
       return this.getLastNode();
     }
     return null;
-  }
+  };
 
   Blockly.LineCursor.prototype.getNextNode = function (
     node: Blockly.ASTNode | null,
     isValid: (p1: Blockly.ASTNode | null) => boolean,
-    loop = true
-  ):  Blockly.ASTNode | null {
+    loop = true,
+  ): Blockly.ASTNode | null {
     if (!node) {
       return null;
     }
@@ -74,11 +75,9 @@ export const applyLineCursorPatch = () => {
       // @ts-expect-error due to hacky patch
       return this.getNextNode(newNode, isValid, loop);
     }
-      // @ts-expect-error accessing private method
+    // @ts-expect-error accessing private method
     const siblingOrParentSibling = this.findSiblingOrParentSibling(node.out());
-    if (isValid(siblingOrParentSibling)) {
-      return siblingOrParentSibling;
-    } else if (siblingOrParentSibling) {
+    if (siblingOrParentSibling) {
       // @ts-expect-error due to hacky patch
       return this.getNextNode(siblingOrParentSibling, isValid, loop);
     }
@@ -91,6 +90,36 @@ export const applyLineCursorPatch = () => {
         : null;
     }
     return null;
-}
-}
+  };
 
+  // @ts-expect-error private
+  Blockly.LineCursor.prototype.validLineNode = function (
+    node: Blockly.ASTNode | null,
+  ): boolean {
+    if (!node) return false;
+    const stackConnections = false;
+    const location = node.getLocation();
+    const type = node && node.getType();
+    switch (type) {
+      case Blockly.ASTNode.types.BLOCK:
+        return !(location as Blockly.Block).outputConnection?.isConnected();
+      case Blockly.ASTNode.types.INPUT: {
+        const connection = location as Blockly.Connection;
+        return (
+          connection.type === Blockly.ConnectionType.NEXT_STATEMENT &&
+          (stackConnections || !connection.isConnected())
+        );
+      }
+      case Blockly.ASTNode.types.NEXT:
+        return (
+          stackConnections || !(location as Blockly.Connection).isConnected()
+        );
+      case Blockly.ASTNode.types.PREVIOUS:
+        return (
+          stackConnections && !(location as Blockly.Connection).isConnected()
+        );
+      default:
+        return false;
+    }
+  };
+};
