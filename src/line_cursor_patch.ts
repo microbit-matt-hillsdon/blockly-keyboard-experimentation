@@ -1,0 +1,96 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import * as Blockly from 'blockly/core';
+
+export const applyLineCursorPatch = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (Blockly.LineCursor.prototype as any).getLastNode = function (): Blockly.ASTNode | null {
+    const topBlocks = this.workspace.getTopBlocks(true);
+    if (topBlocks.length === 0) {
+      return null;
+    }
+    const lastTopBlockNode = Blockly.ASTNode.createTopNode(
+      topBlocks[topBlocks.length - 1],
+    );
+    let prevNode = lastTopBlockNode;
+    let nextNode: Blockly.ASTNode | null = lastTopBlockNode;
+    while (nextNode) {
+      prevNode = nextNode;
+      nextNode = this.getNextNode(
+        prevNode,
+        this.validLineNode.bind(this),
+        false,
+      );
+    }
+    return prevNode;
+  }
+
+  Blockly.LineCursor.prototype.getPreviousNode = function (
+    node: Blockly.ASTNode | null,
+    isValid: (p1: Blockly.ASTNode | null) => boolean,
+    loop = true
+  ):  Blockly.ASTNode | null {
+    if (!node) {
+      return null;
+    }
+    let newNode: Blockly.ASTNode | null = node.prev();
+
+    if (newNode) {
+      // @ts-expect-error accessing private method
+      newNode = this.getRightMostChild(newNode);
+    } else {
+      newNode = node.out();
+    }
+    if (isValid(newNode)) {
+      return newNode;
+    } else if (newNode) {
+      // @ts-expect-error due to hacky patch
+      return this.getPreviousNode(newNode, isValid, loop);
+    }
+    // Loop back to last block if it exists.
+    if (loop) {
+      // @ts-expect-error accessing method not defined in unpatched class
+      return this.getLastNode();
+    }
+    return null;
+  }
+
+  Blockly.LineCursor.prototype.getNextNode = function (
+    node: Blockly.ASTNode | null,
+    isValid: (p1: Blockly.ASTNode | null) => boolean,
+    loop = true
+  ):  Blockly.ASTNode | null {
+    if (!node) {
+      return null;
+    }
+    const newNode = node.in() || node.next();
+    if (isValid(newNode)) {
+      return newNode;
+    } else if (newNode) {
+      // @ts-expect-error due to hacky patch
+      return this.getNextNode(newNode, isValid, loop);
+    }
+      // @ts-expect-error accessing private method
+    const siblingOrParentSibling = this.findSiblingOrParentSibling(node.out());
+    if (isValid(siblingOrParentSibling)) {
+      return siblingOrParentSibling;
+    } else if (siblingOrParentSibling) {
+      // @ts-expect-error due to hacky patch
+      return this.getNextNode(siblingOrParentSibling, isValid, loop);
+    }
+    if (loop) {
+      // Loop back to first block if it exists.
+      // @ts-expect-error accessing private method
+      const topBlocks = this.workspace.getTopBlocks(true);
+      return topBlocks.length > 0
+        ? Blockly.ASTNode.createTopNode(topBlocks[0])
+        : null;
+    }
+    return null;
+}
+}
+

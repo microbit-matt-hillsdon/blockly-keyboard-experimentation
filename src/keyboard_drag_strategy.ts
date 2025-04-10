@@ -153,12 +153,14 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
         potential = cursor.getPreviousNode(potential, (node) => {
           // @ts-expect-error isConnectionType is private.
           return node && ASTNode.isConnectionType(node.getType());
-        });
+          // @ts-expect-error due to hacky patch
+        }, false);
       } else if (dir === Direction.Down || dir === Direction.Right) {
         potential = cursor.getNextNode(potential, (node) => {
           // @ts-expect-error isConnectionType is private.
           return node && ASTNode.isConnectionType(node.getType());
-        });
+          // @ts-expect-error due to hacky patch
+        }, false);
       }
 
       localConns.forEach((conn: RenderedConnection) => {
