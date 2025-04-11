@@ -120,6 +120,7 @@ export class EnterAction {
    * Tries to find a connection on the block to connect to the marked
    * location. If no connection has been marked, or there is not a compatible
    * connection then the block is placed on the workspace.
+   * Trigger a toast per session if possible.
    *
    * @param workspace The main workspace. The workspace
    *     the block will be placed on.
@@ -152,14 +153,30 @@ export class EnterAction {
     this.mover.startMove(workspace);
 
     const sessionItemKey = 'isToastInsertFromFlyoutShown';
-    if (!window.sessionStorage.getItem(sessionItemKey)) {
+    if (!this.sessionStorageIfPossible[sessionItemKey]) {
       const enter = formatActionShortcut(
         Constants.SHORTCUT_NAMES.EDIT_OR_CONFIRM,
         'short',
       );
       const message = `Use the arrow keys to move, then ${enter} to accept the position`;
       toast(workspace, {message});
-      window.sessionStorage.setItem(sessionItemKey, 'true');
+      this.sessionStorageIfPossible[sessionItemKey] = 'true';
+    }
+  }
+
+  private sessionStorageIfPossible = this.getSessionStorageIfPossible();
+
+  /**
+   * Gets session storage if possible.
+   * If session storage is not possible, fallback on internal tracker, which
+   * resets per intialisation instead of per session.
+   */
+  private getSessionStorageIfPossible() {
+    try {
+      return window.sessionStorage;
+    } catch (e) {
+      // Handle possible SecurityError, absent window.
+      return {} as Record<string, string>;
     }
   }
 
