@@ -42,8 +42,8 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
   assignStyle(toast, {
     fontSize: '1.2rem',
     position: 'absolute',
-    bottom: '2rem',
-    right: '-50rem',
+    bottom: '-10rem',
+    right: '2rem',
     padding: '1rem',
     color: 'white',
     backgroundColor: 'rebeccapurple',
@@ -53,7 +53,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
     alignItems: 'center',
     gap: '0.8rem',
     lineHeight: '1.5',
-    transition: 'right 0.3s ease-out',
+    transition: 'bottom 0.3s ease-out',
   });
 
   toast.appendChild(
@@ -89,7 +89,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
 
   workspace.getInjectionDiv().appendChild(toast);
   requestAnimationFrame(() => {
-    toast.style.right = '2rem';
+    toast.style.bottom = '2rem';
   });
 
   let timeout: ReturnType<typeof setTimeout> | undefined;
