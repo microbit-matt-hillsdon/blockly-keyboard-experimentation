@@ -37,6 +37,9 @@ import {ActionMenu} from './actions/action_menu';
 import {MoveActions} from './actions/move';
 import {Mover} from './actions/mover';
 import {UndoRedoAction} from './actions/undo_redo';
+import {applyLineCursorPatch} from './line_cursor_patch';
+
+applyLineCursorPatch();
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
