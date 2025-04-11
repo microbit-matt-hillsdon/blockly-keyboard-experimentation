@@ -107,7 +107,7 @@ export const applyLineCursorPatch = () => {
         const connection = location as Blockly.Connection;
         return (
           connection.type === Blockly.ConnectionType.NEXT_STATEMENT &&
-          (stackConnections || !connection.isConnected())
+          stackConnections
         );
       }
       case Blockly.ASTNode.types.NEXT:
@@ -118,6 +118,31 @@ export const applyLineCursorPatch = () => {
         return (
           stackConnections && !(location as Blockly.Connection).isConnected()
         );
+      default:
+        return false;
+    }
+  };
+
+  // @ts-expect-error private
+  Blockly.LineCursor.prototype.validInLineNode = function (
+    node: Blockly.ASTNode | null,
+  ): boolean {
+    if (!node) return false;
+    // @ts-expect-error private
+    if (this.validLineNode(node)) return true;
+    // const location = node.getLocation();
+    const type = node && node.getType();
+    switch (type) {
+      case Blockly.ASTNode.types.BLOCK:
+        return true;
+      case Blockly.ASTNode.types.INPUT:
+        return false;
+      case Blockly.ASTNode.types.FIELD: {
+        const field = node.getLocation() as Blockly.Field;
+        return !(
+          field.getSourceBlock()?.isSimpleReporter() && field.isFullBlockField()
+        );
+      }
       default:
         return false;
     }
