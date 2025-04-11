@@ -150,6 +150,17 @@ export class EnterAction {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     workspace.getCursor()?.setCurNode(ASTNode.createBlockNode(newBlock)!);
     this.mover.startMove(workspace);
+
+    const sessionItemKey = 'isToastInsertFromFlyoutShown';
+    if (!window.sessionStorage.getItem(sessionItemKey)) {
+      const enter = formatActionShortcut(
+        Constants.SHORTCUT_NAMES.EDIT_OR_CONFIRM,
+        'short',
+      );
+      const message = `Use the arrow keys to move, then ${enter} to accept the position`;
+      toast(workspace, {message});
+      window.sessionStorage.setItem(sessionItemKey, 'true');
+    }
   }
 
   /**
