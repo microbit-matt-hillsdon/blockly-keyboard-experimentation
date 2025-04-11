@@ -281,7 +281,7 @@ export class Clipboard {
       }
       toast(workspace, {
         message: `Copied. Press ${formatActionShortcut('paste', 'short')} to paste.`,
-        duration: 4500,
+        duration: 7000,
       });
     }
     return copied;
