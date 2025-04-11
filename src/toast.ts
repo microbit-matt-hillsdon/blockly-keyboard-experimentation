@@ -31,7 +31,7 @@ export interface ToastOptions {
  * @param options Options.
  */
 export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
-  const {message, duration = 7500} = options;
+  const {message, duration = 10000} = options;
   const className = 'blocklyToast';
   workspace.getInjectionDiv().querySelector(`.${className}`)?.remove();
 
