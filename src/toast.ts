@@ -35,7 +35,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
   const className = 'blocklyToast';
   workspace.getInjectionDiv().querySelector(`.${className}`)?.remove();
 
-  const foregroundColor = 'black'
+  const foregroundColor = 'black';
   const toast = document.createElement('div');
   toast.className = className;
   toast.setAttribute('role', 'status');
