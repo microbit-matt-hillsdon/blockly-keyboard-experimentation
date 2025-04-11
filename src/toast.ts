@@ -35,6 +35,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
   const className = 'blocklyToast';
   workspace.getInjectionDiv().querySelector(`.${className}`)?.remove();
 
+  const foregroundColor = 'black'
   const toast = document.createElement('div');
   toast.className = className;
   toast.setAttribute('role', 'status');
@@ -45,8 +46,8 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
     bottom: '-10rem',
     right: '2rem',
     padding: '1rem',
-    color: 'white',
-    backgroundColor: 'rebeccapurple',
+    color: foregroundColor,
+    backgroundColor: 'white',
     borderRadius: '0.4rem',
     zIndex: '999',
     display: 'flex',
@@ -72,7 +73,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
     margin: '0',
     padding: '0.2rem',
     backgroundColor: 'transparent',
-    color: 'white',
+    color: foregroundColor,
     border: 'none',
   });
   closeButton.ariaLabel = 'Close';
