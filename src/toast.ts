@@ -48,6 +48,7 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
     padding: '1rem',
     color: foregroundColor,
     backgroundColor: 'white',
+    border: '2px solid black',
     borderRadius: '0.4rem',
     zIndex: '999',
     display: 'flex',
