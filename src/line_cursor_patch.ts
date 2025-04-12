@@ -8,27 +8,26 @@ import * as Blockly from 'blockly/core';
 
 export const applyLineCursorPatch = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (Blockly.LineCursor.prototype as any).getLastNode =
-    function (): Blockly.ASTNode | null {
-      const topBlocks = this.workspace.getTopBlocks(true);
-      if (topBlocks.length === 0) {
-        return null;
-      }
-      const lastTopBlockNode = Blockly.ASTNode.createTopNode(
-        topBlocks[topBlocks.length - 1],
-      );
-      let prevNode = lastTopBlockNode;
-      let nextNode: Blockly.ASTNode | null = lastTopBlockNode;
-      while (nextNode) {
-        prevNode = nextNode;
-        nextNode = this.getNextNode(
-          prevNode,
-          this.validLineNode.bind(this),
-          false,
-        );
-      }
-      return prevNode;
-    };
+  (Blockly.LineCursor.prototype as any).getLastNode = function (
+    isValid: (p1: Blockly.ASTNode | null) => boolean,
+  ): Blockly.ASTNode | null {
+    // Loop back to last block if it exists.
+    const topBlocks = this.workspace.getTopBlocks(true);
+    if (!topBlocks.length) return null;
+
+    // Find the last stack.
+    const lastTopBlockNode = Blockly.ASTNode.createStackNode(
+      topBlocks[topBlocks.length - 1],
+    );
+    let prevNode = lastTopBlockNode;
+    let nextNode: Blockly.ASTNode | null = lastTopBlockNode;
+    // Iterate until you fall off the end of the stack.
+    while (nextNode) {
+      prevNode = nextNode;
+      nextNode = this.getNextNode(prevNode, isValid, false);
+    }
+    return prevNode;
+  };
 
   Blockly.LineCursor.prototype.getPreviousNode = function (
     node: Blockly.ASTNode | null,
@@ -55,7 +54,7 @@ export const applyLineCursorPatch = () => {
     // Loop back to last block if it exists.
     if (loop) {
       // @ts-expect-error accessing method not defined in unpatched class
-      return this.getLastNode();
+      return this.getLastNode(isValid);
     }
     return null;
   };
@@ -77,7 +76,12 @@ export const applyLineCursorPatch = () => {
     }
     // @ts-expect-error accessing private method
     const siblingOrParentSibling = this.findSiblingOrParentSibling(node.out());
-    if (siblingOrParentSibling) {
+    if (
+      siblingOrParentSibling?.getType() !== Blockly.ASTNode.types.PREVIOUS &&
+      isValid(siblingOrParentSibling)
+    ) {
+      return siblingOrParentSibling;
+    } else if (siblingOrParentSibling) {
       // @ts-expect-error due to hacky patch
       return this.getNextNode(siblingOrParentSibling, isValid, loop);
     }
@@ -111,13 +115,9 @@ export const applyLineCursorPatch = () => {
         );
       }
       case Blockly.ASTNode.types.NEXT:
-        return (
-          stackConnections || !(location as Blockly.Connection).isConnected()
-        );
+        return false;
       case Blockly.ASTNode.types.PREVIOUS:
-        return (
-          stackConnections && !(location as Blockly.Connection).isConnected()
-        );
+        return false;
       default:
         return false;
     }
@@ -130,13 +130,19 @@ export const applyLineCursorPatch = () => {
     if (!node) return false;
     // @ts-expect-error private
     if (this.validLineNode(node)) return true;
-    // const location = node.getLocation();
+    const location = node.getLocation();
     const type = node && node.getType();
     switch (type) {
       case Blockly.ASTNode.types.BLOCK:
         return true;
-      case Blockly.ASTNode.types.INPUT:
-        return false;
+      case Blockly.ASTNode.types.INPUT: {
+        const connection = location as Blockly.Connection;
+        return (
+          connection.type !== Blockly.ConnectionType.NEXT_STATEMENT &&
+          connection.type !== Blockly.ConnectionType.PREVIOUS_STATEMENT &&
+          !connection.isConnected()
+        );
+      }
       case Blockly.ASTNode.types.FIELD: {
         const field = node.getLocation() as Blockly.Field;
         return !(
