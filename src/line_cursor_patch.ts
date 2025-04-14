@@ -45,7 +45,7 @@ export const applyLineCursorPatch = () => {
     } else {
       newNode = node.out();
     }
-    if (newNode?.getType() !== Blockly.ASTNode.types.NEXT && isValid(newNode)) {
+    if (isValid(newNode)) {
       return newNode;
     } else if (newNode) {
       // @ts-expect-error due to hacky patch
@@ -76,10 +76,7 @@ export const applyLineCursorPatch = () => {
     }
     // @ts-expect-error accessing private method
     const siblingOrParentSibling = this.findSiblingOrParentSibling(node.out());
-    if (
-      siblingOrParentSibling?.getType() !== Blockly.ASTNode.types.PREVIOUS &&
-      isValid(siblingOrParentSibling)
-    ) {
+    if (isValid(siblingOrParentSibling)) {
       return siblingOrParentSibling;
     } else if (siblingOrParentSibling) {
       // @ts-expect-error due to hacky patch
@@ -114,10 +111,6 @@ export const applyLineCursorPatch = () => {
           stackConnections
         );
       }
-      case Blockly.ASTNode.types.NEXT:
-        return false;
-      case Blockly.ASTNode.types.PREVIOUS:
-        return false;
       default:
         return false;
     }
