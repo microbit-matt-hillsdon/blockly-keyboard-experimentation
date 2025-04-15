@@ -8,6 +8,7 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {getFlyoutElement, getToolboxElement} from './workspace_utilities';
 import {enableBlocksOnDrag} from './disabled_blocks';
+import {clearHelpHint} from './hints';
 
 /** Options object for KeyboardNavigation instances. */
 export interface NavigationOptions {
@@ -290,7 +291,7 @@ export class KeyboardNavigation {
    * Toggle visibility of a help dialog for the keyboard shortcuts.
    */
   toggleShortcutDialog(): void {
-    this.navigationController.shortcutDialog.toggle();
+    this.navigationController.shortcutDialog.toggle(this.workspace);
   }
 
   /**

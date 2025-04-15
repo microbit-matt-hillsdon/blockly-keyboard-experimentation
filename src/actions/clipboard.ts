@@ -20,6 +20,7 @@ import {Navigation} from '../navigation';
 import {getShortActionShortcut} from '../shortcut_formatting';
 import * as Blockly from 'blockly';
 import {toast} from '../toast';
+import {clearPasteHints, showCopiedHint} from '../hints';
 
 const KeyCodes = blocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -279,10 +280,7 @@ export class Clipboard {
       if (navigationState === Constants.STATE.FLYOUT) {
         this.navigation.focusWorkspace(workspace);
       }
-      toast(workspace, {
-        message: `Copied. Press ${getShortActionShortcut('paste')} to paste.`,
-        duration: 7000,
-      });
+      showCopiedHint(workspace);
     }
     return copied;
   }
@@ -368,6 +366,8 @@ export class Clipboard {
    */
   private pasteCallback(workspace: WorkspaceSvg) {
     if (!this.copyData || !this.copyWorkspace) return false;
+    clearPasteHints(workspace);
+
     const pasteWorkspace = this.copyWorkspace.isFlyout
       ? workspace
       : this.copyWorkspace;
