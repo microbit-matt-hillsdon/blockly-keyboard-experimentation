@@ -59,7 +59,7 @@ export class Mover {
   /**
    * Temporary element indicating a move.
    */
-  private currentMoveIndicator: SVGForeignObjectElement | null = null;
+  private currentMoveIndicator: SVGElement | null = null;
 
   constructor(protected navigation: Navigation) {}
 
@@ -326,12 +326,11 @@ export class Mover {
     const bounds = (
       blockSvgRoot.querySelector('.blocklyPath') as SVGGraphicsElement
     ).getBBox();
-    const svgNs = 'http://www.w3.org/2000/svg';
     const size = 40;
-    const indicator = document.createElementNS(svgNs, 'foreignObject');
-
-    indicator.setAttribute('x', (bounds.width - size / 2).toString());
-    indicator.setAttribute('y', (-size / 2).toString());
+    const indicator = utils.dom.createSvgElement('foreignObject', {
+      x: bounds.width - size / 2,
+      y: -size / 2,
+    });
     indicator.classList.add('blocklyMoveIndicator');
     indicator.style.width = `${size}px`;
     indicator.style.height = indicator.style.width;
@@ -342,8 +341,9 @@ export class Mover {
     const img = indicator.appendChild(document.createElement('img'));
     img.style.width = '100%';
     img.style.height = '100%';
+    //
     img.src =
-      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTcuODE4LjkzMmEuNDUuNDUgMCAwIDAtLjYzNiAwbC0xLjc1IDEuNzVhLjQ1LjQ1IDAgMSAwIC42MzYuNjM2TDcgMi4zODZWNS41YS41LjUgMCAwIDAgMSAwVjIuMzg2bC45MzIuOTMyYS40NS40NSAwIDAgMCAuNjM2LS42MzZ6TTggOS41YS41LjUgMCAwIDAtMSAwdjMuMTE0bC0uOTMyLS45MzJhLjQ1LjQ1IDAgMCAwLS42MzYuNjM2bDEuNzUgMS43NWEuNDUuNDUgMCAwIDAgLjYzNiAwbDEuNzUtMS43NWEuNDUuNDUgMCAwIDAtLjYzNi0uNjM2TDggMTIuNjE0em0xLTJhLjUuNSAwIDAgMSAuNS0uNWgzLjExNGwtLjkzMi0uOTMyYS40NS40NSAwIDAgMSAuNjM2LS42MzZsMS43NSAxLjc1YS40NS40NSAwIDAgMSAwIC42MzZsLTEuNzUgMS43NWEuNDUuNDUgMCAwIDEtLjYzNi0uNjM2TDEyLjYxNCA4SDkuNWEuNS41IDAgMCAxLS41LS41TTMuMzE4IDYuMDY4TDIuMzg2IDdINS41YS41LjUgMCAwIDEgMCAxSDIuMzg2bC45MzIuOTMyYS40NS40NSAwIDAgMS0uNjM2LjYzNmwtMS43NS0xLjc1YS40NS40NSAwIDAgMSAwLS42MzZsMS43NS0xLjc1YS40NS40NSAwIDEgMSAuNjM2LjYzNiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PC9zdmc+';
+      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Im0xOCA5bDMgM2wtMyAzbS0zLTNoNk02IDlsLTMgM2wzIDNtLTMtM2g2bTAgNmwzIDNsMy0zbS0zLTN2Nm0zLTE1bC0zLTNsLTMgM20zLTN2NiIvPjwvc3ZnPg==';
     blockSvgRoot.appendChild(indicator);
     this.currentMoveIndicator = indicator;
   }
