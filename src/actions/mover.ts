@@ -17,7 +17,6 @@ import * as Constants from '../constants';
 import {Direction, getXYFromDirection} from '../drag_direction';
 import {KeyboardDragStrategy} from '../keyboard_drag_strategy';
 import {Navigation} from '../navigation';
-import {blocks} from 'node_modules/blockly/core/serialization';
 
 /**
  * The distance to move an item, in workspace coordinates, when
