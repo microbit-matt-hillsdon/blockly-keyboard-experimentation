@@ -21,9 +21,12 @@ import type {
 
 import * as Constants from '../constants';
 import type {Navigation} from '../navigation';
-import {getShortActionShortcut} from '../shortcut_formatting';
 import {Mover} from './mover';
-import {toast} from '../toast';
+import {
+  showConstrainedMovementHint,
+  showHelpHint,
+  showUnconstrainedMoveHint,
+} from '../hints';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
@@ -104,9 +107,7 @@ export class EnterAction {
     } else if (nodeType === ASTNode.types.BLOCK) {
       const block = curNode.getLocation() as Block;
       if (!this.tryShowFullBlockFieldEditor(block)) {
-        const shortcut = getShortActionShortcut('list_shortcuts');
-        const message = `Press ${shortcut} for help on keyboard controls`;
-        toast(workspace, {message});
+        showHelpHint(workspace);
       }
     } else if (curNode.isConnection() || nodeType === ASTNode.types.WORKSPACE) {
       this.navigation.openToolboxOrFlyout(workspace);
@@ -152,30 +153,14 @@ export class EnterAction {
     workspace.getCursor()?.setCurNode(ASTNode.createBlockNode(newBlock)!);
     this.mover.startMove(workspace);
 
-    const sessionItemKey = 'isToastInsertFromFlyoutShown';
-    if (!this.sessionStorageIfPossible[sessionItemKey]) {
-      const enter = getShortActionShortcut(
-        Constants.SHORTCUT_NAMES.EDIT_OR_CONFIRM,
-      );
-      const message = `Use the arrow keys to move, then ${enter} to accept the position`;
-      toast(workspace, {message});
-      this.sessionStorageIfPossible[sessionItemKey] = 'true';
-    }
-  }
-
-  private sessionStorageIfPossible = this.getSessionStorageIfPossible();
-
-  /**
-   * Gets session storage if possible.
-   * If session storage is not possible, fallback on internal tracker, which
-   * resets per intialisation instead of per session.
-   */
-  private getSessionStorageIfPossible() {
-    try {
-      return window.sessionStorage;
-    } catch (e) {
-      // Handle possible SecurityError, absent window.
-      return {} as Record<string, string>;
+    const isTopLevelBlock =
+      !newBlock.outputConnection &&
+      !newBlock.nextConnection &&
+      !newBlock.previousConnection;
+    if (isTopLevelBlock) {
+      showUnconstrainedMoveHint(workspace, false);
+    } else {
+      showConstrainedMovementHint(workspace);
     }
   }
 

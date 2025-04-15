@@ -17,7 +17,7 @@ import * as Constants from '../constants';
 import {Direction, getXYFromDirection} from '../drag_direction';
 import {KeyboardDragStrategy} from '../keyboard_drag_strategy';
 import {Navigation} from '../navigation';
-import {blocks} from 'node_modules/blockly/core/serialization';
+import {clearMoveHints} from '../hints';
 
 /**
  * The distance to move an item, in workspace coordinates, when
@@ -141,6 +141,7 @@ export class Mover {
    */
   finishMove(workspace: WorkspaceSvg) {
     this.removeMoveIndicator();
+    clearMoveHints(workspace);
 
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');
@@ -166,6 +167,7 @@ export class Mover {
    */
   abortMove(workspace: WorkspaceSvg) {
     this.removeMoveIndicator();
+    clearMoveHints(workspace);
 
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');

@@ -1,9 +1,27 @@
 import {WorkspaceSvg} from 'blockly';
 
+const storage = (() => {
+  try {
+    return window.sessionStorage;
+  } catch (e) {
+    // Handle possible SecurityError, absent window.
+    return {} as Record<string, string>;
+  }
+})();
+
 /**
  * Toast options.
  */
 export interface ToastOptions {
+  /**
+   * Message id.
+   */
+  id?: string;
+  /**
+   * Flag to show the toast once per session only.
+   * Subsequent calls are ignored.
+   */
+  oncePerSession?: boolean;
   /**
    * Message text.
    */
@@ -14,6 +32,8 @@ export interface ToastOptions {
    */
   duration?: number;
 }
+
+const className = 'blocklyToast';
 
 /**
  * Shows a message as a toast positioned over the workspace.
@@ -31,12 +51,26 @@ export interface ToastOptions {
  * @param options Options.
  */
 export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
+  if (options.oncePerSession && options.id) {
+    if (!options.id) {
+      throw new Error('Must pass id to use oncePerSession');
+    }
+    const key = 'blocklyKeyboardNavShownHints';
+    const value = storage[key] ?? '[]';
+    const shown = JSON.parse(value);
+    if (shown.includes(options.id)) {
+      return;
+    }
+    shown.push(options.id);
+    storage[key] = JSON.stringify(shown);
+  }
+
   const {message, duration = 10000} = options;
-  const className = 'blocklyToast';
-  workspace.getInjectionDiv().querySelector(`.${className}`)?.remove();
+  clearToast(workspace);
 
   const foregroundColor = 'black';
   const toast = document.createElement('div');
+  toast.dataset.toastId = options.id;
   toast.className = className;
   toast.setAttribute('role', 'status');
   toast.setAttribute('aria-live', 'polite');
@@ -105,6 +139,21 @@ export function toast(workspace: WorkspaceSvg, options: ToastOptions): void {
   toast.addEventListener('mousemove', clearToastTimeout);
   toast.addEventListener('mouseleave', setToastTimeout);
   setToastTimeout();
+}
+
+/**
+ * Clear a toast, e.g. in response to a user action.
+ *
+ * @param workspace The workspace
+ * @param id The toast id, or undefined for any toast.
+ */
+export function clearToast(workspace: WorkspaceSvg, id?: string) {
+  const toast = workspace
+    .getInjectionDiv()
+    .querySelector(`.${className}`) as HTMLElement | null;
+  if (toast && (!id || id === toast.dataset.toastId)) {
+    toast.remove();
+  }
 }
 
 function icon(innerHTML: string, style: Partial<CSSStyleDeclaration> = {}) {
