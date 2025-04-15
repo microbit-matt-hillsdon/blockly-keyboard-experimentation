@@ -17,6 +17,7 @@ import * as Constants from '../constants';
 import {Direction, getXYFromDirection} from '../drag_direction';
 import {KeyboardDragStrategy} from '../keyboard_drag_strategy';
 import {Navigation} from '../navigation';
+import {blocks} from 'node_modules/blockly/core/serialization';
 
 /**
  * The distance to move an item, in workspace coordinates, when
@@ -54,6 +55,11 @@ export class Mover {
    * keyboard drags and reset at the end of the drag.
    */
   private oldDragStrategy: IDragStrategy | null = null;
+
+  /**
+   * Temporary element indicating a move.
+   */
+  private currentMoveIndicator: SVGForeignObjectElement | null = null;
 
   constructor(protected navigation: Navigation) {}
 
@@ -101,6 +107,7 @@ export class Mover {
     const cursor = workspace?.getCursor();
     const block = this.getCurrentBlock(workspace);
     if (!cursor || !block) throw new Error('precondition failure');
+    this.addMoveIndicator(block);
 
     // Select and focus block.
     common.setSelected(block);
@@ -133,6 +140,8 @@ export class Mover {
    * @returns True iff move successfully finished.
    */
   finishMove(workspace: WorkspaceSvg) {
+    this.removeMoveIndicator();
+
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');
 
@@ -156,6 +165,8 @@ export class Mover {
    * @returns True iff move successfully aborted.
    */
   abortMove(workspace: WorkspaceSvg) {
+    this.removeMoveIndicator();
+
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');
 
@@ -306,6 +317,40 @@ export class Mover {
       block.setDragStrategy(this.oldDragStrategy);
       this.oldDragStrategy = null;
     }
+  }
+
+  private addMoveIndicator(block: BlockSvg): void {
+    this.removeMoveIndicator();
+    const blockSvgRoot = block.getSvgRoot();
+    // We only move one block.
+    const bounds = (
+      blockSvgRoot.querySelector('.blocklyPath') as SVGGraphicsElement
+    ).getBBox();
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const size = 40;
+    const indicator = document.createElementNS(svgNs, 'foreignObject');
+
+    indicator.setAttribute('x', (bounds.width - size / 2).toString());
+    indicator.setAttribute('y', (-size / 2).toString());
+    indicator.classList.add('blocklyMoveIndicator');
+    indicator.style.width = `${size}px`;
+    indicator.style.height = indicator.style.width;
+    indicator.style.backgroundColor = '#fffc';
+    indicator.style.borderRadius = '50%';
+    indicator.style.border = '1px solid grey';
+    indicator.style.padding = '5px';
+    const img = indicator.appendChild(document.createElement('img'));
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.src =
+      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTcuODE4LjkzMmEuNDUuNDUgMCAwIDAtLjYzNiAwbC0xLjc1IDEuNzVhLjQ1LjQ1IDAgMSAwIC42MzYuNjM2TDcgMi4zODZWNS41YS41LjUgMCAwIDAgMSAwVjIuMzg2bC45MzIuOTMyYS40NS40NSAwIDAgMCAuNjM2LS42MzZ6TTggOS41YS41LjUgMCAwIDAtMSAwdjMuMTE0bC0uOTMyLS45MzJhLjQ1LjQ1IDAgMCAwLS42MzYuNjM2bDEuNzUgMS43NWEuNDUuNDUgMCAwIDAgLjYzNiAwbDEuNzUtMS43NWEuNDUuNDUgMCAwIDAtLjYzNi0uNjM2TDggMTIuNjE0em0xLTJhLjUuNSAwIDAgMSAuNS0uNWgzLjExNGwtLjkzMi0uOTMyYS40NS40NSAwIDAgMSAuNjM2LS42MzZsMS43NSAxLjc1YS40NS40NSAwIDAgMSAwIC42MzZsLTEuNzUgMS43NWEuNDUuNDUgMCAwIDEtLjYzNi0uNjM2TDEyLjYxNCA4SDkuNWEuNS41IDAgMCAxLS41LS41TTMuMzE4IDYuMDY4TDIuMzg2IDdINS41YS41LjUgMCAwIDEgMCAxSDIuMzg2bC45MzIuOTMyYS40NS40NSAwIDAgMS0uNjM2LjYzNmwtMS43NS0xLjc1YS40NS40NSAwIDAgMSAwLS42MzZsMS43NS0xLjc1YS40NS40NSAwIDEgMSAuNjM2LjYzNiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PC9zdmc+';
+    blockSvgRoot.appendChild(indicator);
+    this.currentMoveIndicator = indicator;
+  }
+
+  private removeMoveIndicator() {
+    this.currentMoveIndicator?.remove();
+    this.currentMoveIndicator = null;
   }
 }
 
