@@ -17,6 +17,7 @@ import * as Constants from '../constants';
 import {Direction, getXYFromDirection} from '../drag_direction';
 import {KeyboardDragStrategy} from '../keyboard_drag_strategy';
 import {Navigation} from '../navigation';
+import {blocks} from 'node_modules/blockly/core/serialization';
 
 /**
  * The distance to move an item, in workspace coordinates, when
@@ -54,6 +55,11 @@ export class Mover {
    * keyboard drags and reset at the end of the drag.
    */
   private oldDragStrategy: IDragStrategy | null = null;
+
+  /**
+   * Temporary element indicating a move.
+   */
+  private currentMoveIndicator: SVGElement | null = null;
 
   constructor(protected navigation: Navigation) {}
 
@@ -101,6 +107,7 @@ export class Mover {
     const cursor = workspace?.getCursor();
     const block = this.getCurrentBlock(workspace);
     if (!cursor || !block) throw new Error('precondition failure');
+    this.addMoveIndicator(block);
 
     // Select and focus block.
     common.setSelected(block);
@@ -133,6 +140,8 @@ export class Mover {
    * @returns True iff move successfully finished.
    */
   finishMove(workspace: WorkspaceSvg) {
+    this.removeMoveIndicator();
+
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');
 
@@ -156,6 +165,8 @@ export class Mover {
    * @returns True iff move successfully aborted.
    */
   abortMove(workspace: WorkspaceSvg) {
+    this.removeMoveIndicator();
+
     const info = this.moves.get(workspace);
     if (!info) throw new Error('no move info for workspace');
 
@@ -306,6 +317,42 @@ export class Mover {
       block.setDragStrategy(this.oldDragStrategy);
       this.oldDragStrategy = null;
     }
+  }
+
+  private addMoveIndicator(block: BlockSvg): void {
+    this.removeMoveIndicator();
+    const blockSvgRoot = block.getSvgRoot();
+    // We only move one block.
+    const bounds = (
+      blockSvgRoot.querySelector('.blocklyPath') as SVGGraphicsElement
+    ).getBBox();
+    const size = 40;
+    const indicator = utils.dom.createSvgElement('foreignObject', {
+      x: bounds.width - size / 2,
+      y: -size / 2,
+    });
+    indicator.classList.add('blocklyMoveIndicator');
+    indicator.style.width = `${size}px`;
+    indicator.style.height = indicator.style.width;
+    indicator.style.backgroundColor = '#fffc';
+    indicator.style.borderRadius = '50%';
+    indicator.style.border = '1px solid grey';
+    indicator.style.padding = '5px';
+    const img = indicator.appendChild(document.createElement('img'));
+    img.style.width = '100%';
+    img.style.height = '100%';
+    // tabler:arrows-move from https://icon-sets.iconify.design/ MIT licensed
+    // Copyright (c) 2020-2024 Paweł Kuna
+    // TODO: draw one in SVG?
+    img.src =
+      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Im0xOCA5bDMgM2wtMyAzbS0zLTNoNk02IDlsLTMgM2wzIDNtLTMtM2g2bTAgNmwzIDNsMy0zbS0zLTN2Nm0zLTE1bC0zLTNsLTMgM20zLTN2NiIvPjwvc3ZnPg==';
+    blockSvgRoot.appendChild(indicator);
+    this.currentMoveIndicator = indicator;
+  }
+
+  private removeMoveIndicator() {
+    this.currentMoveIndicator?.remove();
+    this.currentMoveIndicator = null;
   }
 }
 
