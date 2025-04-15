@@ -341,7 +341,9 @@ export class Mover {
     const img = indicator.appendChild(document.createElement('img'));
     img.style.width = '100%';
     img.style.height = '100%';
-    //
+    // tabler:arrows-move from https://icon-sets.iconify.design/ MIT licensed
+    // Copyright (c) 2020-2024 Paweł Kuna
+    // TODO: draw one in SVG?
     img.src =
       'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Im0xOCA5bDMgM2wtMyAzbS0zLTNoNk02IDlsLTMgM2wzIDNtLTMtM2g2bTAgNmwzIDNsMy0zbS0zLTN2Nm0zLTE1bC0zLTNsLTMgM20zLTN2NiIvPjwvc3ZnPg==';
     blockSvgRoot.appendChild(indicator);
