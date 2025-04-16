@@ -162,8 +162,8 @@ export class MoveActions {
       ContextMenuRegistry.registry.register(menuItem);
     }
 
-    // Monkey patch shortcut registry to finish any in-progress move for all
-    // non-move-related actions.
+    // Monkey patch shortcut registry to ignore all non-move-related
+    // actions during a move.
     this.oldShortcutRegistryOnKeyDown = ShortcutRegistry.registry.onKeyDown;
     ShortcutRegistry.registry.onKeyDown = (workspace, e) => {
       if (!this.oldShortcutRegistryOnKeyDown) return false;
@@ -177,7 +177,7 @@ export class MoveActions {
         )
       ) {
         if (this.mover.isMoving(workspace)) {
-          this.mover.finishMove(workspace);
+          return false;
         }
       }
 
