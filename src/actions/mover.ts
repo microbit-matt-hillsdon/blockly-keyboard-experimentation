@@ -154,6 +154,8 @@ export class Mover {
     this.unpatchWorkspace(workspace);
     this.unpatchDragStrategy(info.block);
     this.moves.delete(workspace);
+    // Delay scroll until after block has finished moving.
+    setTimeout(() => this.scrollCurrentBlockIntoView(workspace), 0)
     return true;
   }
 
@@ -188,6 +190,8 @@ export class Mover {
     this.unpatchWorkspace(workspace);
     this.unpatchDragStrategy(info.block);
     this.moves.delete(workspace);
+    // Delay scroll until after block has finished moving.
+    setTimeout(() => this.scrollCurrentBlockIntoView(workspace), 0)
     return true;
   }
 
@@ -210,6 +214,7 @@ export class Mover {
     );
 
     info.updateTotalDelta();
+    this.scrollCurrentBlockIntoView(workspace);
     return true;
   }
 
@@ -231,6 +236,7 @@ export class Mover {
     info.totalDelta.y += y * UNCONSTRAINED_MOVE_DISTANCE * workspace.scale;
 
     info.dragger.onDrag(info.fakePointerEvent('pointermove'), info.totalDelta);
+    this.scrollCurrentBlockIntoView(workspace);
     return true;
   }
 
@@ -355,6 +361,20 @@ export class Mover {
   private removeMoveIndicator() {
     this.currentMoveIndicator?.remove();
     this.currentMoveIndicator = null;
+  }
+
+  /**
+   * Scrolls the current block into view if exists one.
+   *
+   * @param workspace The workspace to get current block from.
+   */
+  private scrollCurrentBlockIntoView(workspace: WorkspaceSvg) {
+    const blockToView = this.getCurrentBlock(workspace);
+    if (blockToView) {
+      workspace.scrollBoundsIntoView(
+        blockToView.getBoundingRectangleWithoutChildren(),
+      );
+    }
   }
 }
 
