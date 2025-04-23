@@ -6,14 +6,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {WorkspaceSvg} from 'blockly';
+import {WorkspaceSvg, Toast} from 'blockly';
 import {SHORTCUT_NAMES} from './constants';
 import {getShortActionShortcut} from './shortcut_formatting';
-import {clearToast, toast} from './toast';
 
 const unconstrainedMoveHintId = 'unconstrainedMoveHint';
 const constrainedMoveHintId = 'constrainedMoveHint';
 const copiedHintId = 'copiedHint';
+const cutHintId = 'cutHint';
 const helpHintId = 'helpHint';
 
 /**
@@ -29,7 +29,7 @@ export function showUnconstrainedMoveHint(
   const enter = getShortActionShortcut(SHORTCUT_NAMES.EDIT_OR_CONFIRM);
   const modifier = navigator.platform.startsWith('Mac') ? '⌥' : 'Ctrl';
   const message = `Hold ${modifier} and use arrow keys to move freely, then ${enter} to accept the position`;
-  toast(workspace, {
+  Toast.show(workspace, {
     message,
     id: unconstrainedMoveHintId,
     oncePerSession: !force,
@@ -44,7 +44,11 @@ export function showUnconstrainedMoveHint(
 export function showConstrainedMovementHint(workspace: WorkspaceSvg) {
   const enter = getShortActionShortcut(SHORTCUT_NAMES.EDIT_OR_CONFIRM);
   const message = `Use the arrow keys to move, then ${enter} to accept the position`;
-  toast(workspace, {message, id: constrainedMoveHintId, oncePerSession: true});
+  Toast.show(workspace, {
+    message,
+    id: constrainedMoveHintId,
+    oncePerSession: true,
+  });
 }
 
 /**
@@ -53,8 +57,8 @@ export function showConstrainedMovementHint(workspace: WorkspaceSvg) {
  * @param workspace The workspace.
  */
 export function clearMoveHints(workspace: WorkspaceSvg) {
-  clearToast(workspace, constrainedMoveHintId);
-  clearToast(workspace, unconstrainedMoveHintId);
+  Toast.hide(workspace, constrainedMoveHintId);
+  Toast.hide(workspace, unconstrainedMoveHintId);
 }
 
 /**
@@ -63,10 +67,23 @@ export function clearMoveHints(workspace: WorkspaceSvg) {
  * @param workspace Workspace.
  */
 export function showCopiedHint(workspace: WorkspaceSvg) {
-  toast(workspace, {
+  Toast.show(workspace, {
     message: `Copied. Press ${getShortActionShortcut('paste')} to paste.`,
     duration: 7000,
     id: copiedHintId,
+  });
+}
+
+/**
+ * Nudge the user to paste after a cut.
+ *
+ * @param workspace Workspace.
+ */
+export function showCutHint(workspace: WorkspaceSvg) {
+  Toast.show(workspace, {
+    message: `Cut. Press ${getShortActionShortcut('paste')} to paste.`,
+    duration: 7000,
+    id: cutHintId,
   });
 }
 
@@ -76,8 +93,8 @@ export function showCopiedHint(workspace: WorkspaceSvg) {
  * @param workspace The workspace.
  */
 export function clearPasteHints(workspace: WorkspaceSvg) {
-  // TODO: cut?
-  clearToast(workspace, copiedHintId);
+  Toast.hide(workspace, cutHintId);
+  Toast.hide(workspace, copiedHintId);
 }
 
 /**
@@ -89,7 +106,7 @@ export function showHelpHint(workspace: WorkspaceSvg) {
   const shortcut = getShortActionShortcut('list_shortcuts');
   const message = `Press ${shortcut} for help on keyboard controls`;
   const id = helpHintId;
-  toast(workspace, {message, id});
+  Toast.show(workspace, {message, id});
 }
 
 /**
@@ -100,5 +117,5 @@ export function showHelpHint(workspace: WorkspaceSvg) {
 export function clearHelpHint(workspace: WorkspaceSvg) {
   // TODO: We'd like to do this in MakeCode too as we override.
   // Could have an option for showing help in the plugin?
-  clearToast(workspace, helpHintId);
+  Toast.hide(workspace, helpHintId);
 }

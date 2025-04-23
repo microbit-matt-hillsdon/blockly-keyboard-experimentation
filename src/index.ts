@@ -8,7 +8,6 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {getFlyoutElement, getToolboxElement} from './workspace_utilities';
 import {enableBlocksOnDrag} from './disabled_blocks';
-import {clearHelpHint} from './hints';
 
 /** Options object for KeyboardNavigation instances. */
 export interface NavigationOptions {

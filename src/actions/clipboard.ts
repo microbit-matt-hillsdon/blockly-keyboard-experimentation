@@ -19,8 +19,7 @@ import type {BlockSvg, WorkspaceSvg} from 'blockly';
 import {Navigation} from '../navigation';
 import {getShortActionShortcut} from '../shortcut_formatting';
 import * as Blockly from 'blockly';
-import {toast} from '../toast';
-import {clearPasteHints, showCopiedHint} from '../hints';
+import {clearPasteHints, showCopiedHint, showCutHint} from '../hints';
 
 const KeyCodes = blocklyUtils.KeyCodes;
 const createSerializedKey = ShortcutRegistry.registry.createSerializedKey.bind(
@@ -170,6 +169,10 @@ export class Clipboard {
     if (cursor instanceof LineCursor) cursor.preDelete(sourceBlock);
     sourceBlock.checkAndDelete();
     if (cursor instanceof LineCursor) cursor.postDelete();
+    const cut = !!this.copyData;
+    if (cut) {
+      showCutHint(workspace);
+    }
     return true;
   }
 
