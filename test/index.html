@@ -31,13 +31,6 @@
         width: 100%;
         max-height: 100%;
         position: relative;
-        --outline-width: 5px;
-      }
-
-      .blocklyFlyout {
-        top: var(--outline-width);
-        left: var(--outline-width);
-        height: calc(100% - calc(var(--outline-width) * 2));
       }
 
       .blocklyToolboxDiv ~ .blocklyFlyout:focus {
@@ -97,53 +90,49 @@
         font-weight: bold;
       }
 
-      .blocklyActiveFocus:is(
-          .blocklyField,
-          .blocklyPath,
-          .blocklyHighlightedConnectionPath
-        ) {
-        stroke: #ffa200;
-        stroke-width: 3px;
+      html {
+        --blockly-active-node-color: #ffa200;
+        --blockly-active-tree-color: rgb(97, 91, 127);
+        --blockly-selection-width: 3px;
       }
-      .blocklyActiveFocus > .blocklyFlyoutBackground,
-      .blocklyActiveFocus > .blocklyMainBackground {
-        stroke: #ffa200;
-        stroke-width: 3px;
+      * {
+        box-sizing: border-box;
       }
-      .blocklyActiveFocus:is(
-          .blocklyToolbox,
-          .blocklyToolboxCategoryContainer
-        ) {
-        outline: 3px solid #ffa200;
+
+      /* Blocks, connections and fields. */
+      .blocklyActiveFocus:is(.blocklyPath, .blocklyHighlightedConnectionPath),
+      .blocklyActiveFocus.blocklyField > .blocklyFieldRect {
+        stroke: var(--blockly-active-node-color);
+        stroke-width: var(--blockly-selection-width);
       }
       .blocklyPassiveFocus:is(
-          .blocklyField,
-          .blocklyPath,
+          .blocklyPath:not(.blocklyFlyout .blocklyPath),
           .blocklyHighlightedConnectionPath
-        ) {
-        stroke: #ffa200;
+        ),
+      .blocklyPassiveFocus.blocklyField > .blocklyFieldRect {
+        stroke: var(--blockly-active-node-color);
         stroke-dasharray: 5px 3px;
-        stroke-width: 3px;
+        stroke-width: var(--blockly-selection-width);
       }
-      .blocklyPassiveFocus > .blocklyFlyoutBackground,
-      .blocklyPassiveFocus > .blocklyMainBackground {
-        stroke: #ffa200;
-        stroke-dasharray: 5px 3px;
-        stroke-width: 3px;
+
+      /* Toolbox and flyout. */
+      .blocklyFlyout:has(.blocklyActiveFocus),
+      .blocklyToolbox:has(.blocklyActiveFocus),
+      .blocklyActiveFocus:is(.blocklyFlyout, .blocklyToolbox) {
+        outline-offset: calc(var(--blockly-selection-width) * -1);
+        outline: var(--blockly-selection-width) solid
+          var(--blockly-active-tree-color);
       }
-      .blocklyPassiveFocus:is(
-          .blocklyToolbox,
-          .blocklyToolboxCategoryContainer
-        ) {
-        border: 3px dashed #ffa200;
+      /* Separate layer so we can have a visible outline. */
+      .blocklyWorkspaceFocusRingLayer.blocklyWorkspaceFocused {
+        outline-offset: calc(var(--blockly-selection-width) * -1);
+        outline: var(--blockly-selection-width) solid
+          var(--blockly-active-tree-color);
       }
-      .blocklySelected:is(.blocklyPath) {
-        stroke: #ffa200;
-        stroke-width: 5;
+      .blocklyToolboxCategoryContainer:focus-visible {
+        outline: none;
       }
-      .blocklySelected > .blocklyPathLight {
-        display: none;
-      }
+      /*TODO: moving a block should have active styling for connection & block */
     </style>
   </head>
 

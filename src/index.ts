@@ -36,6 +36,25 @@ export class KeyboardNavigation {
   private originalTheme: Blockly.Theme;
 
   /**
+   * Layer for the workspace.
+   */
+  private workspaceFocusRingDiv: HTMLElement | null = null;
+
+  /**
+   * Updates the focus ring layer for the workspace when focus moves to the
+   * workspace.
+   */
+  private workspaceFocusInListener = () => {
+    this.workspaceFocusRingDiv?.classList.add('blocklyWorkspaceFocused');
+  };
+  /**
+   * Updates the focus ring layer for the workspace when focus moves elsewhere.
+   */
+  private workspaceFocusOutListener = () => {
+    this.workspaceFocusRingDiv?.classList.remove('blocklyWorkspaceFocused');
+  };
+
+  /**
    * Constructs the keyboard navigation.
    *
    * @param workspace The workspace that the plugin will
@@ -75,12 +94,40 @@ export class KeyboardNavigation {
         workspace.getParentSvg(),
       );
     }
+
+    // Add a layer for a workspace outline and wire up events.
+    this.workspaceFocusRingDiv = workspace
+      .getInjectionDiv()
+      .appendChild(document.createElement('div')) as HTMLElement;
+    this.workspaceFocusRingDiv.className = 'blocklyWorkspaceFocusRingLayer';
+    Object.assign(this.workspaceFocusRingDiv.style, {
+      position: 'absolute',
+      top: '0px',
+      left: '0px',
+      bottom: '0px',
+      right: '0px',
+      pointerEvents: 'none',
+      zIndex: '999',
+    } satisfies Partial<CSSStyleDeclaration>);
+    workspace
+      .getSvgGroup()
+      .addEventListener('focusin', this.workspaceFocusInListener);
+    workspace
+      .getSvgGroup()
+      .addEventListener('focusout', this.workspaceFocusOutListener);
   }
 
   /**
    * Disables keyboard navigation for this navigator's workspace.
    */
   dispose() {
+    this.workspace
+      .getSvgGroup()
+      .removeEventListener('focusin', this.workspaceFocusInListener);
+    this.workspace
+      .getSvgGroup()
+      .removeEventListener('focusout', this.workspaceFocusOutListener);
+
     // Remove the event listener that enables blocks on drag
     this.workspace.removeChangeListener(enableBlocksOnDrag);
 
