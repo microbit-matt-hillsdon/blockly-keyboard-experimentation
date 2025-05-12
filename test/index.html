@@ -114,6 +114,10 @@
         stroke-dasharray: 5px 3px;
         stroke-width: var(--blockly-selection-width);
       }
+      .blocklyPassiveFocus.blocklyHighlightedConnectionPath {
+        /* The connection path is being unexpectedly hidden in core */
+        display: unset !important;
+      }
 
       /* Toolbox and flyout. */
       .blocklyFlyout:has(.blocklyActiveFocus),
