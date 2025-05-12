@@ -8,6 +8,11 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {enableBlocksOnDrag} from './disabled_blocks';
 
+Blockly.Field.prototype.getClass = function () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return this.constructor as any;
+};
+
 /** Options object for KeyboardNavigation instances. */
 export interface NavigationOptions {
   cursor: Partial<Blockly.CursorOptions>;
