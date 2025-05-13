@@ -132,6 +132,7 @@ export class KeyboardNavigation {
     this.workspace
       .getSvgGroup()
       .removeEventListener('focusout', this.workspaceFocusOutListener);
+    this.workspaceFocusRingDiv?.remove();
 
     // Remove the event listener that enables blocks on drag
     this.workspace.removeChangeListener(enableBlocksOnDrag);
