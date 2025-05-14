@@ -92,7 +92,8 @@
 
       html {
         --blockly-active-node-color: #ffa200;
-        --blockly-active-tree-color: rgb(97, 91, 127);
+        --blockly-active-tree-color: #60a5fa;
+        --blockly-active-tree-color: black;
         --blockly-selection-width: 3px;
       }
       * {
@@ -127,16 +128,19 @@
         outline: var(--blockly-selection-width) solid
           var(--blockly-active-tree-color);
       }
-      /* Separate layer so we can have a visible outline. */
-      .blocklyWorkspaceFocusRingLayer.blocklyWorkspaceFocused {
-        outline-offset: calc(var(--blockly-selection-width) * -1);
-        outline: var(--blockly-selection-width) solid
-          var(--blockly-active-tree-color);
+      /* Workspace */
+      .blocklyWorkspace:has(.blocklyActiveFocus) .blocklyWorkspaceFocusRing,
+      .blocklyWorkspace.blocklyActiveFocus .blocklyWorkspaceFocusRing {
+        stroke: var(--blockly-active-tree-color);
+        stroke-width: calc(var(--blockly-selection-width) * 2);
+      }
+      .blocklyWorkspace.blocklyActiveFocus .blocklyWorkspaceSelectionRing {
+        stroke: var(--blockly-active-node-color);
+        stroke-width: var(--blockly-selection-width);
       }
       .blocklyToolboxCategoryContainer:focus-visible {
         outline: none;
       }
-      /*TODO: moving a block should have active styling for connection & block */
     </style>
   </head>
 

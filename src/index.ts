@@ -26,23 +26,20 @@ export class KeyboardNavigation {
   private originalTheme: Blockly.Theme;
 
   /**
-   * Layer for the workspace.
+   * Focus ring in the workspace.
    */
-  private workspaceFocusRingDiv: HTMLElement | null = null;
+  private workspaceFocusRing: Element | null = null;
+  /**
+   * Selection ring inside the workspace.
+   */
+  private workspaceSelectionRing: Element | null = null;
 
   /**
-   * Updates the focus ring layer for the workspace when focus moves to the
-   * workspace.
+   * Used to restore monkey patch.
    */
-  private workspaceFocusInListener = () => {
-    this.workspaceFocusRingDiv?.classList.add('blocklyWorkspaceFocused');
-  };
-  /**
-   * Updates the focus ring layer for the workspace when focus moves elsewhere.
-   */
-  private workspaceFocusOutListener = () => {
-    this.workspaceFocusRingDiv?.classList.remove('blocklyWorkspaceFocused');
-  };
+  private oldWorkspaceResize:
+    | InstanceType<typeof Blockly.WorkspaceSvg>['resize']
+    | null = null;
 
   /**
    * Constructs the keyboard navigation.
@@ -77,39 +74,47 @@ export class KeyboardNavigation {
       );
     }
 
-    // Add a layer for a workspace outline and wire up events.
-    this.workspaceFocusRingDiv = workspace
-      .getInjectionDiv()
-      .appendChild(document.createElement('div')) as HTMLElement;
-    this.workspaceFocusRingDiv.className = 'blocklyWorkspaceFocusRingLayer';
-    Object.assign(this.workspaceFocusRingDiv.style, {
-      position: 'absolute',
-      top: '0px',
-      left: '0px',
-      bottom: '0px',
-      right: '0px',
-      pointerEvents: 'none',
-      zIndex: '999',
-    } satisfies Partial<CSSStyleDeclaration>);
-    workspace
-      .getSvgGroup()
-      .addEventListener('focusin', this.workspaceFocusInListener);
-    workspace
-      .getSvgGroup()
-      .addEventListener('focusout', this.workspaceFocusOutListener);
+    this.oldWorkspaceResize = workspace.resize;
+    workspace.resize = () => {
+      this.oldWorkspaceResize?.call(this.workspace);
+      this.resizeWorkspaceRings();
+    };
+    this.workspaceSelectionRing = Blockly.utils.dom.createSvgElement('rect', {
+      fill: 'none',
+      class: 'blocklyWorkspaceSelectionRing',
+    });
+    workspace.getSvgGroup().appendChild(this.workspaceSelectionRing);
+    this.workspaceFocusRing = Blockly.utils.dom.createSvgElement('rect', {
+      fill: 'none',
+      class: 'blocklyWorkspaceFocusRing',
+    });
+    workspace.getSvgGroup().appendChild(this.workspaceFocusRing);
+    this.resizeWorkspaceRings();
+  }
+
+  private resizeWorkspaceRings() {
+    if (!this.workspaceFocusRing || !this.workspaceSelectionRing) return;
+    this.resizeFocusRingInternal(this.workspaceSelectionRing, 5);
+    this.resizeFocusRingInternal(this.workspaceFocusRing, 0);
+  }
+
+  private resizeFocusRingInternal(ring: Element, inset: number) {
+    const metrics = this.workspace.getMetrics();
+    ring.setAttribute('x', (metrics.absoluteLeft + inset).toString());
+    ring.setAttribute('y', (metrics.absoluteTop + inset).toString());
+    ring.setAttribute('width', (metrics.viewWidth - inset * 2).toString());
+    ring.setAttribute('height', (metrics.svgHeight - inset * 2).toString());
   }
 
   /**
    * Disables keyboard navigation for this navigator's workspace.
    */
   dispose() {
-    this.workspace
-      .getSvgGroup()
-      .removeEventListener('focusin', this.workspaceFocusInListener);
-    this.workspace
-      .getSvgGroup()
-      .removeEventListener('focusout', this.workspaceFocusOutListener);
-    this.workspaceFocusRingDiv?.remove();
+    this.workspaceFocusRing?.remove();
+    this.workspaceSelectionRing?.remove();
+    if (this.oldWorkspaceResize) {
+      this.workspace.resize = this.oldWorkspaceResize;
+    }
 
     // Remove the event listener that enables blocks on drag
     this.workspace.removeChangeListener(enableBlocksOnDrag);
