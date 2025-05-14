@@ -7,6 +7,7 @@
 import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {enableBlocksOnDrag} from './disabled_blocks';
+import {InputModeTracker} from './input_mode_tracker';
 
 /** Plugin for keyboard navigation. */
 export class KeyboardNavigation {
@@ -24,6 +25,11 @@ export class KeyboardNavigation {
    * it when/if keyboard navigation is disabled.
    */
   private originalTheme: Blockly.Theme;
+
+  /**
+   * Input mode tracking.
+   */
+  private inputModeTracker: InputModeTracker;
 
   /**
    * Focus ring in the workspace.
@@ -53,6 +59,7 @@ export class KeyboardNavigation {
     this.navigationController.init();
     this.navigationController.addWorkspace(workspace);
     this.navigationController.enable(workspace);
+    this.inputModeTracker = new InputModeTracker(workspace);
 
     this.originalTheme = workspace.getTheme();
     this.setGlowTheme();
@@ -122,6 +129,7 @@ export class KeyboardNavigation {
     this.workspace.setTheme(this.originalTheme);
 
     this.navigationController.dispose();
+    this.inputModeTracker.dispose();
   }
 
   /**

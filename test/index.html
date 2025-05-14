@@ -101,44 +101,59 @@
       }
 
       /* Blocks, connections and fields. */
-      .blocklyActiveFocus:is(.blocklyPath, .blocklyHighlightedConnectionPath),
-      .blocklyActiveFocus.blocklyField > .blocklyFieldRect {
+      .blocklyKeyboardNavigation
+        .blocklyActiveFocus:is(.blocklyPath, .blocklyHighlightedConnectionPath),
+      .blocklyKeyboardNavigation
+        .blocklyActiveFocus.blocklyField
+        > .blocklyFieldRect {
         stroke: var(--blockly-active-node-color);
         stroke-width: var(--blockly-selection-width);
       }
-      .blocklyPassiveFocus:is(
+      .blocklyKeyboardNavigation
+        .blocklyPassiveFocus:is(
           .blocklyPath:not(.blocklyFlyout .blocklyPath),
           .blocklyHighlightedConnectionPath
         ),
-      .blocklyPassiveFocus.blocklyField > .blocklyFieldRect {
+      .blocklyKeyboardNavigation
+        .blocklyPassiveFocus.blocklyField
+        > .blocklyFieldRect {
         stroke: var(--blockly-active-node-color);
         stroke-dasharray: 5px 3px;
         stroke-width: var(--blockly-selection-width);
       }
-      .blocklyPassiveFocus.blocklyHighlightedConnectionPath {
+      .blocklyKeyboardNavigation
+        .blocklyPassiveFocus.blocklyHighlightedConnectionPath {
         /* The connection path is being unexpectedly hidden in core */
         display: unset !important;
       }
 
       /* Toolbox and flyout. */
-      .blocklyFlyout:has(.blocklyActiveFocus),
-      .blocklyToolbox:has(.blocklyActiveFocus),
-      .blocklyActiveFocus:is(.blocklyFlyout, .blocklyToolbox) {
+      .blocklyKeyboardNavigation .blocklyFlyout:has(.blocklyActiveFocus),
+      .blocklyKeyboardNavigation .blocklyToolbox:has(.blocklyActiveFocus),
+      .blocklyKeyboardNavigation
+        .blocklyActiveFocus:is(.blocklyFlyout, .blocklyToolbox) {
         outline-offset: calc(var(--blockly-selection-width) * -1);
         outline: var(--blockly-selection-width) solid
           var(--blockly-active-tree-color);
       }
       /* Workspace */
-      .blocklyWorkspace:has(.blocklyActiveFocus) .blocklyWorkspaceFocusRing,
-      .blocklyWorkspace.blocklyActiveFocus .blocklyWorkspaceFocusRing {
+      .blocklyKeyboardNavigation
+        .blocklyWorkspace:has(.blocklyActiveFocus)
+        .blocklyWorkspaceFocusRing,
+      .blocklyKeyboardNavigation
+        .blocklyWorkspace.blocklyActiveFocus
+        .blocklyWorkspaceFocusRing {
         stroke: var(--blockly-active-tree-color);
         stroke-width: calc(var(--blockly-selection-width) * 2);
       }
-      .blocklyWorkspace.blocklyActiveFocus .blocklyWorkspaceSelectionRing {
+      .blocklyKeyboardNavigation
+        .blocklyWorkspace.blocklyActiveFocus
+        .blocklyWorkspaceSelectionRing {
         stroke: var(--blockly-active-node-color);
         stroke-width: var(--blockly-selection-width);
       }
-      .blocklyToolboxCategoryContainer:focus-visible {
+      .blocklyKeyboardNavigation
+        .blocklyToolboxCategoryContainer:focus-visible {
         outline: none;
       }
     </style>
