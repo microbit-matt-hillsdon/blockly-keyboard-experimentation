@@ -817,6 +817,11 @@ export default {
               kind: 'block',
               type: 'colour_random',
             },
+            {
+              'kind': 'button',
+              'text': 'Fire alert',
+              'callbackKey': 'fireAlertButton',
+            },
           ],
         },
         {

@@ -97,6 +97,10 @@ function createWorkspace(): Blockly.WorkspaceSvg {
   // Disable blocks that aren't inside the setup or draw loops.
   workspace.addChangeListener(Blockly.Events.disableOrphans);
 
+  workspace.registerButtonCallback('fireAlertButton', () =>
+    alert('button pressed'),
+  );
+
   load(workspace, scenario);
   runCode();
 
