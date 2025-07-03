@@ -32,15 +32,9 @@ export class StackNavigationAction {
       callback: (workspace) => {
         const currentRoot = workspace?.getCursor()?.getSourceBlock()?.getRootBlock();
         if (!currentRoot) return false;
-        const rootList = workspace.getTopBlocks();
-        
-        const index = rootList.indexOf(currentRoot);
-        let newIndex;
-        do {
-          newIndex = (index - 1 + rootList.length) % rootList.length;
-        } while (!rootList[newIndex].canBeFocused());
-
-        getFocusManager().focusNode(rootList[newIndex]);
+        const prevRoot = workspace.getNavigator().getPreviousSibling(currentRoot);
+        if (!prevRoot) return false;
+        getFocusManager().focusNode(prevRoot);
         return true;
       },
       keyCodes: [SHORTCUT_PREV_STACK],
@@ -52,15 +46,9 @@ export class StackNavigationAction {
       callback: (workspace) => {
         const currentRoot = workspace?.getCursor()?.getSourceBlock()?.getRootBlock();
         if (!currentRoot) return false;
-        const rootList = workspace.getTopBlocks();
-        
-        const index = rootList.indexOf(currentRoot);
-        let newIndex;
-        do {
-          newIndex = (index + 1) % rootList.length;
-        } while (!rootList[newIndex].canBeFocused());
-
-        getFocusManager().focusNode(rootList[newIndex]);
+        const nextRoot = workspace.getNavigator().getNextSibling(currentRoot);
+        if (!nextRoot) return false;
+        getFocusManager().focusNode(nextRoot);
         return true;
       },
       keyCodes: [SHORTCUT_NEXT_STACK],
