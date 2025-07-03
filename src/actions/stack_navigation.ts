@@ -10,7 +10,7 @@ import {
   getFocusManager,
   utils,
 } from 'blockly/core';
-import { KeyboardShortcut } from 'node_modules/blockly/core/shortcut_registry';
+import {KeyboardShortcut} from 'node_modules/blockly/core/shortcut_registry';
 
 const SHORTCUT_PREV_STACK = utils.KeyCodes.P;
 const SHORTCUT_NEXT_STACK = utils.KeyCodes.N;
@@ -22,17 +22,25 @@ export class StackNavigationAction {
   stackShortcuts: KeyboardShortcut[] = [];
   install() {
     const preconditionFn = (workspace: WorkspaceSvg) => {
-      const currentRoot = workspace?.getCursor()?.getSourceBlock()?.getRootBlock();
+      const currentRoot = workspace
+        ?.getCursor()
+        ?.getSourceBlock()
+        ?.getRootBlock();
       return !!currentRoot;
-    }
-    
+    };
+
     const previousStackShortcut: KeyboardShortcut = {
       name: 'go_to_previous_stack',
       preconditionFn,
       callback: (workspace) => {
-        const currentRoot = workspace?.getCursor()?.getSourceBlock()?.getRootBlock();
+        const currentRoot = workspace
+          ?.getCursor()
+          ?.getSourceBlock()
+          ?.getRootBlock();
         if (!currentRoot) return false;
-        const prevRoot = workspace.getNavigator().getPreviousSibling(currentRoot);
+        const prevRoot = workspace
+          .getNavigator()
+          .getPreviousSibling(currentRoot);
         if (!prevRoot) return false;
         getFocusManager().focusNode(prevRoot);
         return true;
@@ -44,7 +52,10 @@ export class StackNavigationAction {
       name: 'go_to_next_stack',
       preconditionFn,
       callback: (workspace) => {
-        const currentRoot = workspace?.getCursor()?.getSourceBlock()?.getRootBlock();
+        const currentRoot = workspace
+          ?.getCursor()
+          ?.getSourceBlock()
+          ?.getRootBlock();
         if (!currentRoot) return false;
         const nextRoot = workspace.getNavigator().getNextSibling(currentRoot);
         if (!nextRoot) return false;
@@ -64,7 +75,9 @@ export class StackNavigationAction {
    * Reverts the patched undo/redo shortcuts in the registry.
    */
   uninstall() {
-    this.stackShortcuts.forEach(ss => ShortcutRegistry.registry.unregister(ss.name));
+    this.stackShortcuts.forEach((ss) =>
+      ShortcutRegistry.registry.unregister(ss.name),
+    );
     this.stackShortcuts = [];
   }
 }

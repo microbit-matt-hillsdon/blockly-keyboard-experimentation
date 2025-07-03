@@ -36,7 +36,7 @@ import {ActionMenu} from './actions/action_menu';
 import {MoveActions} from './actions/move';
 import {Mover} from './actions/mover';
 import {UndoRedoAction} from './actions/undo_redo';
-import { StackNavigationAction } from './actions/stack_navigation';
+import {StackNavigationAction} from './actions/stack_navigation';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
