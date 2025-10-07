@@ -8,6 +8,7 @@ import * as Blockly from 'blockly/core';
 import {NavigationController} from './navigation_controller';
 import {enableBlocksOnDrag} from './disabled_blocks';
 import {registerHtmlToast} from './html_toast';
+export {registerFlyoutCursor} from './flyout_cursor';
 
 /** Plugin for keyboard navigation. */
 export class KeyboardNavigation {
