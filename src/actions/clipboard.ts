@@ -13,7 +13,6 @@ import {
   WorkspaceSvg,
   clipboard,
   isSelectable,
-  utils,
 } from 'blockly';
 import * as Constants from '../constants';
 import {Navigation} from '../navigation';
@@ -197,7 +196,7 @@ export class Clipboard {
       name: Constants.SHORTCUT_NAMES.COPY,
       preconditionFn: this.oldCopyShortcut.preconditionFn,
       callback: this.copyCallback.bind(this),
-      keyCodes: [utils.KeyCodes.E],
+      keyCodes: this.oldCopyShortcut.keyCodes,
       allowCollision: false,
     };
 
