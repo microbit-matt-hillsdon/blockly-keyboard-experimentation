@@ -18,9 +18,6 @@ export class KeyboardNavigation {
   /** Keyboard navigation controller instance for the workspace. */
   private navigationController: NavigationController;
 
-  /** Cursor for the main workspace. */
-  private cursor: Blockly.LineCursor;
-
   /**
    * Focus ring in the workspace.
    */
@@ -61,8 +58,6 @@ export class KeyboardNavigation {
     this.navigationController.addWorkspace(workspace);
     this.navigationController.enable(workspace);
 
-    this.cursor = new Blockly.LineCursor(workspace);
-
     // Add the event listener to enable disabled blocks on drag.
     workspace.addChangeListener(enableBlocksOnDrag);
 
@@ -94,6 +89,8 @@ export class KeyboardNavigation {
     });
     workspace.getSvgGroup().appendChild(this.workspaceFocusRing);
     this.resizeWorkspaceRings();
+
+    workspace.getCursor().setNavigationLoops(false);
 
     registerHtmlToast();
   }
@@ -308,7 +305,7 @@ export class KeyboardNavigation {
     stroke: var(--blockly-active-node-color);
     stroke-width: var(--blockly-selection-width);
   }
-  
+
   /* The workspace itself is the active node. */
   .blocklyKeyboardNavigation
     .blocklyBubble.blocklyActiveFocus
