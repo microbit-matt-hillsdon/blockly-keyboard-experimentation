@@ -94,6 +94,14 @@ export class NavigationController {
     | null = null;
 
   /**
+   * Original WorkspaceSvG.prototype.onNodeFocus method, saved by
+   * addWorkspaceFocusedHandler.
+   */
+  private origWorkspaceSvgOnNodeFocus:
+    | typeof Blockly.WorkspaceSvg.prototype.onNodeFocus
+    | null = null;
+
+  /**
    * Registers the default keyboard shortcuts for keyboard navigation.
    */
   init() {
@@ -155,9 +163,24 @@ export class NavigationController {
   }
 
   private addWorkspaceFocusedHandler(workspace: WorkspaceSvg) {
-    WorkspaceSvg.prototype.onNodeFocus = () => {
+    this.origWorkspaceSvgOnNodeFocus =
+      Blockly.WorkspaceSvg.prototype.onNodeFocus;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
+    Blockly.WorkspaceSvg.prototype.onNodeFocus = function () {
+      if (that.origWorkspaceSvgOnNodeFocus) {
+        that.origWorkspaceSvgOnNodeFocus.call(this);
+      }
       showWorkspaceHint(workspace);
     };
+  }
+
+  private removeWorkspaceFocusedHandler(workspace: WorkspaceSvg) {
+    if (this.origWorkspaceSvgOnNodeFocus) {
+      Blockly.WorkspaceSvg.prototype.onNodeFocus =
+        this.origWorkspaceSvgOnNodeFocus;
+      this.origWorkspaceSvgOnNodeFocus = null;
+    }
   }
 
   /**
@@ -182,6 +205,7 @@ export class NavigationController {
    */
   removeWorkspace(workspace: WorkspaceSvg) {
     this.navigation.removeWorkspace(workspace);
+    this.removeWorkspaceFocusedHandler(workspace);
   }
 
   /**
