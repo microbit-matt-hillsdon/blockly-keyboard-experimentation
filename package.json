@@ -63,7 +63,7 @@
     "@types/p5": "^1.7.6",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
-    "blockly": "12.3.1",
+    "blockly": "file:blockly-12.3.1.tgz",
     "chai": "^5.2.0",
     "eslint": "^8.49.0",
     "eslint-config-google": "^0.14.0",
@@ -80,7 +80,7 @@
     "webdriverio": "^9.12.1"
   },
   "peerDependencies": {
-    "blockly": "^12.3.0"
+    "blockly": "file:blockly-12.3.1.tgz"
   },
   "publishConfig": {
     "access": "public",
