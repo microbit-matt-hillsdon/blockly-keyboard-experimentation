@@ -110,6 +110,21 @@ export function showHelpHint(workspace: WorkspaceSvg) {
 }
 
 /**
+ * Nudge the user to use the arrow keys to explore the blocks and open the help.
+ *
+ * @param workspace The workspace.
+ */
+export function showWorkspaceHint(workspace: WorkspaceSvg) {
+  const shortcut = getShortActionShortcut('list_shortcuts');
+  const message = Msg['WORKSPACE_HINT'].replace('%1', shortcut);
+  Toast.show(workspace, {
+    message,
+    id: 'workspaceHelpHint',
+    oncePerSession: true,
+  });
+}
+
+/**
  * Clear the help hint.
  *
  * @param workspace The workspace.

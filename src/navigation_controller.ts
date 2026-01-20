@@ -35,6 +35,7 @@ import {MoveActions} from './actions/move';
 import {COMMIT_MOVE_SHORTCUT, Mover} from './actions/mover';
 import {DuplicateAction} from './actions/duplicate';
 import {StackNavigationAction} from './actions/stack_navigation';
+import {showWorkspaceHint} from './hints';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
@@ -153,6 +154,12 @@ export class NavigationController {
     }
   }
 
+  private addWorkspaceFocusedHandler(workspace: WorkspaceSvg) {
+    WorkspaceSvg.prototype.onNodeFocus = () => {
+      showWorkspaceHint(workspace);
+    };
+  }
+
   /**
    * Adds all necessary event listeners and markers to a workspace for keyboard
    * navigation to work. This must be called for keyboard navigation to work
@@ -163,6 +170,7 @@ export class NavigationController {
    */
   addWorkspace(workspace: WorkspaceSvg) {
     this.navigation.addWorkspace(workspace);
+    this.addWorkspaceFocusedHandler(workspace);
   }
 
   /**
