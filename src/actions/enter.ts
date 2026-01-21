@@ -180,7 +180,7 @@ export class EnterAction {
       curNode instanceof RenderedConnection ||
       curNode instanceof WorkspaceSvg
     ) {
-      this.navigation.openToolboxOrFlyout(workspace);
+      showHelpHint(workspace);
       return true;
     } else if (curNode instanceof icons.Icon) {
       // Calling the icon's click handler will trigger its action, generally
