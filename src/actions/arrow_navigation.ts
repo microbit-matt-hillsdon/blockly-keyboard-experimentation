@@ -16,6 +16,7 @@ import type {Toolbox, WorkspaceSvg} from 'blockly/core';
 import * as Blockly from 'blockly/core';
 import * as Constants from '../constants';
 import type {Navigation} from '../navigation';
+import {clearNavigateInHint} from '../hints';
 
 const KeyCodes = BlocklyUtils.KeyCodes;
 
@@ -61,6 +62,7 @@ export class ArrowNavigation {
       let isHandled = false;
       switch (this.navigation.getState()) {
         case Constants.STATE.WORKSPACE:
+          clearNavigateInHint(workspace);
           isHandled = this.fieldShortcutHandler(workspace, shortcut);
           if (!isHandled && workspace) {
             if (

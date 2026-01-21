@@ -19,6 +19,7 @@ import {
   comments,
   getFocusManager,
   hasBubble,
+  ConnectionType,
 } from 'blockly/core';
 
 import type {Block} from 'blockly/core';
@@ -29,6 +30,7 @@ import {Mover, MoveType} from './mover';
 import {
   showConstrainedMovementHint,
   showHelpHint,
+  showNavigateInHint,
   showUnconstrainedMoveHint,
 } from '../hints';
 
@@ -152,7 +154,26 @@ export class EnterAction {
       return true;
     } else if (curNode instanceof BlockSvg) {
       if (!this.tryShowFullBlockFieldEditor(curNode)) {
-        showHelpHint(workspace);
+        let inputs = 0;
+        curNode.inputList.flatMap((i) => {
+          i.fieldRow.forEach((f) => {
+            if (f.EDITABLE && f.isClickable() && f.isVisible()) {
+              inputs += 1;
+            }
+          });
+          if (
+            i.isVisible() &&
+            i.connection &&
+            i.connection.type === ConnectionType.INPUT_VALUE
+          ) {
+            inputs += 1;
+          }
+        });
+        if (inputs) {
+          showNavigateInHint(workspace);
+        } else {
+          showHelpHint(workspace);
+        }
       }
       return true;
     } else if (
