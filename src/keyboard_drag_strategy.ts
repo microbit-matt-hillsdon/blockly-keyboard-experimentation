@@ -88,6 +88,11 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
       // candidate location.
       this.searchNode = neighbour;
       if (this.isConstrainedMovement()) {
+        if (this.connectionCandidate.distance === 0) {
+          // @ts-expect-error private field
+          const workspace = this.workspace;
+          workspace.getAudioManager().beep(260);
+        }
         // Position the moving block down and slightly to the right of the
         // target connection.
         this.block.moveDuringDrag(
@@ -102,6 +107,7 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
         // @ts-expect-error private field
         const workspace = this.workspace;
         showUnconstrainedMoveHint(workspace, true);
+        workspace.getAudioManager().beep(260);
       }
     }
   }
