@@ -78,6 +78,69 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
   override drag(newLoc: utils.Coordinate, e?: PointerEvent): void {
     if (!e) return;
     this.currentDragDirection = getDirectionFromXY({x: e.tiltX, y: e.tiltY});
+
+    // Ensure that move mode does not loop.
+    if (this.connectionCandidate && this.isConstrainedMovement()) {
+      const neighbour = (this.connectionCandidate as ConnectionCandidate)
+        .neighbour;
+      let firstValidConnection;
+      const connectionChecker = this.block.workspace.connectionChecker;
+      // @ts-expect-error getLocalConnections is private.
+      const localConnections = this.getLocalConnections(this.block);
+      for (let i = 0; i < this.allConnections.length; i++) {
+        if (firstValidConnection) {
+          break;
+        }
+        for (let j = 0; j < localConnections.length; j++) {
+          if (
+            connectionChecker.canConnect(
+              localConnections[j],
+              this.allConnections[i],
+              true,
+              Infinity,
+            )
+          ) {
+            firstValidConnection = this.allConnections[i];
+            break;
+          }
+        }
+      }
+      if (
+        neighbour === firstValidConnection &&
+        (this.currentDragDirection === Direction.Up ||
+          this.currentDragDirection === Direction.Left)
+      ) {
+        return;
+      }
+      let lastValidConnection;
+      this.allConnections[this.allConnections.length - 1];
+      for (let i = this.allConnections.length - 1; i >= 0; i--) {
+        if (lastValidConnection) {
+          break;
+        }
+        for (let j = 0; j < localConnections.length; j++) {
+          if (
+            connectionChecker.canConnect(
+              localConnections[j],
+              this.allConnections[i],
+              true,
+              Infinity,
+            )
+          ) {
+            lastValidConnection = this.allConnections[i];
+            break;
+          }
+        }
+      }
+      if (
+        neighbour === lastValidConnection &&
+        (this.currentDragDirection === Direction.Down ||
+          this.currentDragDirection === Direction.Right)
+      ) {
+        return;
+      }
+    }
+
     super.drag(newLoc);
 
     // Handle the case when an unconstrained drag found a connection candidate.
