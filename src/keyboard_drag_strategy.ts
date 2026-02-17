@@ -88,11 +88,22 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
       // candidate location.
       this.searchNode = neighbour;
       if (this.isConstrainedMovement()) {
+        const currentCoordinates = this.block.relativeCoords;
+        const newCoordinates = new utils.Coordinate(
+          neighbour.x + 10,
+          neighbour.y + 10,
+        );
+        if (
+          newCoordinates.x === currentCoordinates.x &&
+          newCoordinates.y === currentCoordinates.y
+        ) {
+          // @ts-expect-error private field
+          const workspace = this.workspace;
+          workspace.getAudioManager().beep(260);
+        }
         // Position the moving block down and slightly to the right of the
         // target connection.
-        this.block.moveDuringDrag(
-          new utils.Coordinate(neighbour.x + 10, neighbour.y + 10),
-        );
+        this.block.moveDuringDrag(newCoordinates);
       }
     } else {
       // Handle the case when unconstrained drag was far from any candidate.
@@ -102,6 +113,7 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
         // @ts-expect-error private field
         const workspace = this.workspace;
         showUnconstrainedMoveHint(workspace, true);
+        workspace.getAudioManager().beep(260);
       }
     }
   }
