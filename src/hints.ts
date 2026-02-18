@@ -15,6 +15,7 @@ const constrainedMoveHintId = 'constrainedMoveHint';
 const copiedHintId = 'copiedHint';
 const cutHintId = 'cutHint';
 const helpHintId = 'helpHint';
+const navigateInHintId = 'navigateInHint';
 
 /**
  * Nudge the user to use unconstrained movement.
@@ -110,6 +111,21 @@ export function showHelpHint(workspace: WorkspaceSvg) {
 }
 
 /**
+ * Nudge the user to open the help.
+ *
+ * @param workspace The workspace.
+ */
+export function showNavigateInHint(workspace: WorkspaceSvg) {
+  // const shortcut = getShortActionShortcut(SHORTCUT_NAMES.RIGHT);
+  // Ensure the correct shortcuts in the final implementation
+  // as they can be customised.
+  // Ensure that direction (rtl / ltr) is respected in final implementation.
+  const message = `Use the right arrow key to move to the next input`;
+  const id = navigateInHintId;
+  Toast.show(workspace, {message, id});
+}
+
+/**
  * Clear the help hint.
  *
  * @param workspace The workspace.
@@ -118,4 +134,13 @@ export function clearHelpHint(workspace: WorkspaceSvg) {
   // TODO: We'd like to do this in MakeCode too as we override.
   // Could have an option for showing help in the plugin?
   Toast.hide(workspace, helpHintId);
+}
+
+/**
+ * Clear the navigate in hint.
+ *
+ * @param workspace The workspace.
+ */
+export function clearNavigateInHint(workspace: WorkspaceSvg) {
+  Toast.hide(workspace, navigateInHintId);
 }
