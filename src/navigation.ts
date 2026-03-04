@@ -257,7 +257,8 @@ export class Navigation {
     const mutatedBlockId = e.blockId;
     const cursor = workspace.getCursor();
     const block = cursor.getSourceBlock();
-    if (block && block.id === mutatedBlockId) {
+    const curNode = cursor.getCurNode();
+    if (block && block.id === mutatedBlockId && !curNode?.canBeFocused()) {
       cursor.setCurNode(block);
     }
   }
