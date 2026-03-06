@@ -79,6 +79,9 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
     if (!e) return;
     this.currentDragDirection = getDirectionFromXY({x: e.tiltX, y: e.tiltY});
 
+    // @ts-expect-error private field
+    const workspace = this.workspace;
+
     // Ensure that move mode does not loop. There is probably a better way...
     if (this.connectionCandidate && this.isConstrainedMovement()) {
       const neighbour = (this.connectionCandidate as ConnectionCandidate)
@@ -110,6 +113,7 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
         (this.currentDragDirection === Direction.Up ||
           this.currentDragDirection === Direction.Left)
       ) {
+        workspace.getAudioManager().beep(260);
         return;
       }
       let lastValidConnection;
@@ -137,6 +141,7 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
         (this.currentDragDirection === Direction.Down ||
           this.currentDragDirection === Direction.Right)
       ) {
+        workspace.getAudioManager().beep(260);
         return;
       }
     }
@@ -151,22 +156,11 @@ export class KeyboardDragStrategy extends dragging.BlockDragStrategy {
       // candidate location.
       this.searchNode = neighbour;
       if (this.isConstrainedMovement()) {
-        const currentCoordinates = this.block.relativeCoords;
-        const newCoordinates = new utils.Coordinate(
-          neighbour.x + 10,
-          neighbour.y + 10,
-        );
-        if (
-          newCoordinates.x === currentCoordinates.x &&
-          newCoordinates.y === currentCoordinates.y
-        ) {
-          // @ts-expect-error private field
-          const workspace = this.workspace;
-          workspace.getAudioManager().beep(260);
-        }
         // Position the moving block down and slightly to the right of the
         // target connection.
-        this.block.moveDuringDrag(newCoordinates);
+        this.block.moveDuringDrag(
+          new utils.Coordinate(neighbour.x + 10, neighbour.y + 10),
+        );
       }
     } else {
       // Handle the case when unconstrained drag was far from any candidate.
